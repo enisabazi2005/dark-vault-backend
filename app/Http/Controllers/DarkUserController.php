@@ -13,4 +13,16 @@ class DarkUserController extends Controller
 
         return DarkUserResource::collection($darkUsers);
     }
+
+    public function show($id)
+    {
+        $user = DarkUsers::find($id);
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        return response()->json($user);
+    }
+    
 }
