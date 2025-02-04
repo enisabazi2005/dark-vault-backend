@@ -6,12 +6,15 @@ use App\Models\DarkUsers;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class StorePassword extends Model
+class StoreEmail extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['dark_users_id', 'password'];
-
+    protected $fillable = [
+        'name' ,
+        'email',
+        'dark_users_id',
+    ];
 
     public function user()
     {
