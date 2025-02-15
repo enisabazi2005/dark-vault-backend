@@ -36,6 +36,7 @@ class AuthController extends Controller {
             'birthdate' => $request->birthdate,
             'age' => $age,
             'picture' => $request->file('picture') ? $request->file('picture')->store('profile_pictures', 'public') : null,
+            'request_id' => strtoupper(\Illuminate\Support\Str::random(8)),
         ]);
 
         $token = $user->createToken('dark_vault_token')->plainTextToken;

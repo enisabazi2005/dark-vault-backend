@@ -46,6 +46,9 @@ class DarkResource extends Resource
                                     ->label('Password')
                                     ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                                     ->required(),
+                                TextInput::make('request_id')
+                                    ->label('Write your required id')
+                                    ->required(),
                             ]),
                     ]),
 

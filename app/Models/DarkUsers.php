@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\FriendRequests;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 
 class DarkUsers extends Model
 {
@@ -25,7 +27,8 @@ class DarkUsers extends Model
         'gender',
         'birthdate',
         'age',
-        'picture'
+        'picture',
+        'request_id',
     ];
     protected $hidden = [
         'password',
@@ -54,5 +57,20 @@ class DarkUsers extends Model
     {
         return $this->password; // Default Laravel password field
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            $user->request_id = strtoupper(Str::random(8)); // Generates a random 8-character string
+        });
+    }
+    
+    public function sentFriendRequests()
+{
+    return $this->hasMany(FriendRequests::class, 'dark_user_id', 'id');
+}
+
 
 }

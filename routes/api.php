@@ -2,26 +2,27 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DarkUserController;
+use App\Http\Controllers\FriendReqestsController;
 use App\Http\Controllers\StoreEmailController;
 use App\Http\Controllers\StoreNotesController;
 use App\Http\Controllers\StorePasswordController;
 use App\Http\Controllers\StorePrivateInfoController;
+use App\Models\FriendRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-
-
-
-
-// Route::post('/register', [AuthController::class, 'register']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('/test', function () {
-    return response()->json(['message' => 'API is working']);
-});
+
+Route::apiResource('/friend-requests', FriendRequests::class);
 // Route::apiResource('/store-passwords', StorePasswordController::class);
 Route::get('/users', [DarkUserController::class, 'index']);
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/friend-request/{request_id}/send', [FriendReqestsController::class , 'sendRequest']);
+    Route::post('/friend-request/{senderRequestId}/respond', [FriendReqestsController::class, 'respondRequest']);
+    Route::get('/friend-request/{request_id}/friends', [FriendReqestsController::class, 'getFriends']);
+    Route::get('/friend-request/{request_id}/pending', [FriendReqestsController::class, 'getPendingRequest']);
+
     Route::get('users/{id}', [DarkUserController::class, 'show']);
     
     Route::post('/store-password', [StorePasswordController::class, 'store']);

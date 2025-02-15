@@ -23,6 +23,7 @@ class DarkUserResource extends JsonResource
             'age' => $this->age,
             'birthdate' => $this->birthdate,
             'picture' => $this->picture,
+            'request_id' => $this->request_id,
         ];
     }
 }
