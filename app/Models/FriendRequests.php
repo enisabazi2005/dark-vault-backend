@@ -34,7 +34,6 @@ class FriendRequests extends Model
 
     public function requestFriend()
     {
-        // Ensure this points to the correct field on the DarkUsers model
         return $this->belongsTo(DarkUsers::class, 'request_friend_id', 'request_id');
     }
     

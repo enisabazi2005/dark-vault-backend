@@ -51,12 +51,9 @@ class FriendReqestsController extends Controller
     }
 
     public function respondRequest(Request $request, $senderRequestId) { 
-        // Get the authenticated user (receiver)
         $receiver = Auth::user(); 
-        // Log::info(['Reciever', $receiver]);
-        // Find the sender by request_id from the route parameter
+
         $sender = DarkUsers::where('request_id', $senderRequestId)->first();
-        // Log::info(['Sender' , $sender]);
     
         if (!$receiver || !$sender) { 
             return response()->json(['message' => 'Invalid request id'], 400);

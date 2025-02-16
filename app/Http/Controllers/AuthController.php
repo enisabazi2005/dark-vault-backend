@@ -43,7 +43,8 @@ class AuthController extends Controller {
 
         return response()->json([
             'user' => $user,
-            'token' => $token
+            'token' => $token,
+            'profile_picture_url' => asset('storage/' . $user->picture) 
         ], 201);
     }
 
