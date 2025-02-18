@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DarkUserController;
 use App\Http\Controllers\FriendReqestsController;
+use App\Http\Controllers\PusherController;
 use App\Http\Controllers\StoreEmailController;
 use App\Http\Controllers\StoreNotesController;
 use App\Http\Controllers\StorePasswordController;
@@ -11,13 +12,17 @@ use App\Models\FriendRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::apiResource('/friend-requests', FriendRequests::class);
 // Route::apiResource('/store-passwords', StorePasswordController::class);
 Route::get('/users', [DarkUserController::class, 'index']);
+Route::post('/send-message', [PusherController::class, 'store']);
+Route::get('/messages/{senderRequestId}/{receiverRequestId}', [PusherController::class , 'getMessages']);
 Route::middleware('auth:sanctum')->group(function () {
+
     Route::post('/friend-request/{request_id}/send', [FriendReqestsController::class , 'sendRequest']);
     Route::post('/friend-request/{senderRequestId}/respond', [FriendReqestsController::class, 'respondRequest']);
     Route::get('/friend-request/{request_id}/friends', [FriendReqestsController::class, 'getFriends']);

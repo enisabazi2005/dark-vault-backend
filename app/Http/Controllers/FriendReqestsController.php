@@ -52,7 +52,7 @@ class FriendReqestsController extends Controller
 
     public function respondRequest(Request $request, $senderRequestId) { 
         $receiver = Auth::user(); 
-
+    
         $sender = DarkUsers::where('request_id', $senderRequestId)->first();
     
         if (!$receiver || !$sender) { 
@@ -64,46 +64,50 @@ class FriendReqestsController extends Controller
             ->where('request_friend_id', $sender->request_id)
             ->first();
     
-        // Log::info(['Friend Request' , $friendRequest]);
-
         if (!$friendRequest) { 
             return response()->json(['message' => 'No friend request found'], 400);
         }
     
         if ($request->action === 'accept') { 
             // Ensure 'friend' field is an array before merging
-            $friendList = json_decode($friendRequest->friend, true) ?? [];
-            $friendList[] = $sender->id;
+            $receiverFriends = json_decode($friendRequest->friend, true) ?? [];
+            $senderFriends = FriendRequests::where('dark_user_id', $sender->id)
+                ->where('request_friend_id', $receiver->request_id)
+                ->first();
     
+            // Update receiver's friend list
+            $receiverFriends[] = $sender->id;
             $friendRequest->update([
                 'is_accepted' => true,
-                'friend' => json_encode($friendList),
+                'friend' => json_encode($receiverFriends),
                 'pending' => null,
             ]);
     
-            // Log::info(['Accept FriendList' ,$friendList ]);
-
-
-            return response()->json(['message' => 'Friend Request Accepted']);
-        } 
-        
-        elseif ($request->action === 'reject') { 
-            // Ensure 'rejection' field is an array before merging
-            $rejectionList = json_decode($friendRequest->rejection, true) ?? [];
-            $rejectionList[] = $sender->id;
+            // Update sender's friend list (create if not exists)
+            if (!$senderFriends) {
+                FriendRequests::create([
+                    'dark_user_id' => $sender->id,
+                    'request_friend_id' => $receiver->request_id,
+                    'is_accepted' => true,
+                    'friend' => json_encode([$receiver->id]),
+                    'pending' => null,
+                ]);
+            } else {
+                $existingFriends = json_decode($senderFriends->friend, true) ?? [];
+                $existingFriends[] = $receiver->id;
+                $senderFriends->update([
+                    'is_accepted' => true,
+                    'friend' => json_encode($existingFriends),
+                    'pending' => null,
+                ]);
+            }
     
-            $friendRequest->update([
-                'is_accepted' => false,
-                'rejection' => json_encode($rejectionList),
-            ]);
-            // Log::info(['Reject Friendlist', $rejectionList]);
-            return response()->json(['message' => 'Friend Request Rejected']);
+            return response()->json(['message' => 'Friend Request Accepted']);
         }
     
         return response()->json(['message' => 'Invalid action'], 400);
     }
     
-
     public function getFriends(Request $request) { 
         // Retrieve the user by their request_id
         $user = DarkUsers::where('request_id', $request->request_id)->first();
@@ -129,7 +133,7 @@ class FriendReqestsController extends Controller
         }
     
         // Retrieve friends' details by their IDs
-        $friends = DarkUsers::whereIn('id', $friendIds)->get(['id', 'name', 'lastname']); 
+        $friends = DarkUsers::whereIn('id', $friendIds)->get(['id', 'name', 'lastname', 'request_id', 'gender', 'birthdate', 'age']); 
     
         // Return the list of friends with more details
         return response()->json($friends);
