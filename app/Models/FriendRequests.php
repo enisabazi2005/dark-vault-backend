@@ -12,6 +12,7 @@ class FriendRequests extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id',
         'dark_user_id',
         'request_friend_id',
         'is_accepted',

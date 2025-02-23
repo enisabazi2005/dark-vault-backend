@@ -12,12 +12,12 @@ use Laravel\Sanctum\HasApiTokens;
 
 class DarkUsers extends Model
 {
-    use HasFactory, HasApiTokens , Notifiable;
+    use HasFactory, HasApiTokens, Notifiable;
 
     protected $table = 'dark_users';
 
     protected $primaryKey = 'id';
-    
+
 
     protected $fillable = [
         'name',
@@ -29,6 +29,10 @@ class DarkUsers extends Model
         'age',
         'picture',
         'request_id',
+        'online',
+        'offline',
+        'away',
+        'do_not_disturb',
     ];
     protected $hidden = [
         'password',
@@ -40,7 +44,7 @@ class DarkUsers extends Model
     ];
 
     protected $attributes = [
-        'birthdate' => '1950-01-01', 
+        'birthdate' => '1950-01-01',
     ];
 
     public function getAuthIdentifierName()
@@ -66,11 +70,9 @@ class DarkUsers extends Model
             $user->request_id = strtoupper(Str::random(8)); // Generates a random 8-character string
         });
     }
-    
+
     public function sentFriendRequests()
-{
-    return $this->hasMany(FriendRequests::class, 'dark_user_id', 'id');
-}
-
-
+    {
+        return $this->hasMany(FriendRequests::class, 'dark_user_id', 'id');
+    }
 }

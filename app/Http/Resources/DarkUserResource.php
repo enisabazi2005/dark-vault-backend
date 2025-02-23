@@ -15,6 +15,7 @@ class DarkUserResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'name' => $this->name,
             'lastname' => $this->lastname,
             'email' => $this->email,
@@ -24,6 +25,9 @@ class DarkUserResource extends JsonResource
             'birthdate' => $this->birthdate,
             'picture' => $this->picture,
             'request_id' => $this->request_id,
+            'online' => $this->online,
+            'offline' => $this->offline,
+            'away' => $this->away,
         ];
     }
 }
