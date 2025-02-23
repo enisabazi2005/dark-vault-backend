@@ -14,5 +14,7 @@ class Message extends Model
         'reciever_id',
         'message',
         'dark_users_id',
+        'order',
+        'message_sent_at',
     ];
 }

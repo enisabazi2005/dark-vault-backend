@@ -19,20 +19,31 @@ class PusherController extends Controller
             'message' => 'required|string',
             'dark_users_id' => 'required|int|exists:dark_users,id'
         ]);
-        
+
         try {
-            $message =  Message::create([
+            $lastMessage = Message::where(function ($query) use ($validated) {
+                $query->where('sender_id', $validated['sender_id'])
+                    ->where('reciever_id', $validated['reciever_id']);
+            })
+                ->orWhere(function ($query) use ($validated) {
+                    $query->where('sender_id', $validated['reciever_id'])
+                        ->where('reciever_id', $validated['sender_id']);
+                })
+                ->latest('order')
+                ->first();
+
+            $order = $lastMessage ? $lastMessage->order + 1 : 1;
+
+            $message = Message::create([
                 'sender_id' => $validated['sender_id'],
                 'reciever_id' => $validated['reciever_id'],
                 'message' => $validated['message'],
                 'dark_users_id' => $validated['dark_users_id'],
+                'order' => $order,
+                'message_sent_at' => now(),
             ]);
-    
-            // Broadcast event if using Pusher
-            // broadcast(new NewMessage($message))->toOthers();
-            // broadcast(new NewMessage($message->message, $message->sender_id, $message->reciever_id));
-            // BroadcastNewMessage::dispatch($message->message, $message->sender_id, $message->receiver_id);
-            broadcast(new NewMessage($message)); 
+
+            broadcast(new NewMessage($message));
             Log::info(['message sent', $message]);
             return response()->json(['message' => 'Message sent successfully'], 201);
         } catch (\Exception $e) {
@@ -40,75 +51,41 @@ class PusherController extends Controller
         }
     }
 
+
     public function getMessages($senderRequestId, $receiverRequestId)
     {
-        // Log the received request parameters for debugging
-        Log::info("Received request to get messages", [
-            'senderRequestId' => $senderRequestId,
-            'receiverRequestId' => $receiverRequestId,
-        ]);
-    
-        // Get the sender's and receiver's dark_users_id by their request_id
         $sender = DarkUsers::where('id', $senderRequestId)->first();
         $receiver = DarkUsers::where('id', $receiverRequestId)->first();
 
-        // Log if users are not found
-        if (!$sender) {
-            Log::warning("Sender not found", ['senderRequestId' => $senderRequestId]);
-        }
-        if (!$receiver) {
-            Log::warning("Receiver not found", ['receiverRequestId' => $receiverRequestId]);
-        }
-    
-        // If either user is not found, return an error
         if (!$sender || !$receiver) {
             return response()->json(['error' => 'One or both users not found'], 404);
         }
-    
-        // Log the found users' dark_users_id
-        Log::info("Users found", [
-            'sender_dark_users_id' => $sender->dark_users_id,
-            'receiver_dark_users_id' => $receiver->dark_users_id,
-        ]);
-    
-        // Query the messages table using sender's dark_users_id and receiver's request_id as reciever_id
+
         $messages = Message::where(function ($query) use ($sender, $receiver) {
-            $query->where('dark_users_id', $sender->id) // Use sender's dark_users_id
-                  ->where('reciever_id', $receiver->request_id); // Use receiver's dark_users_id
+            $query->where('dark_users_id', $sender->id)
+                ->where('reciever_id', $receiver->request_id);
         })
-        ->orWhere(function ($query) use ($sender, $receiver) {
-            $query->where('dark_users_id', $receiver->id) // Use receiver's dark_users_id
-                  ->where('reciever_id', $sender->request_id); // Use sender's dark_users_id
-        })
-        ->get();
-    
-        // Log the number of messages found
-        Log::info("Number of messages found", ['messages_count' => $messages->count()]);
-    
-        // Check if messages were found
+            ->orWhere(function ($query) use ($sender, $receiver) {
+                $query->where('dark_users_id', $receiver->id)
+                    ->where('reciever_id', $sender->request_id);
+            })
+            ->orderBy('order')
+            ->get();
+
         if ($messages->isEmpty()) {
             return response()->json(['message' => 'No messages found'], 404);
         }
+
         $responseMessages = $messages->map(function ($message) use ($sender, $receiver) {
-            // If the sender of the message is the senderRequestId, set it accordingly
-            if ($message->sender_id == $sender->dark_users_id) {
-                return [
-                    'sender_id' => $message->sender_id,  // Use actual sender_id from the message
-                    'receiver_id' => $message->reciever_id,  // Use actual receiver_id from the message
-                    'message' => $message->message,
-                ];
-            } else {
-                // If the sender of the message is the receiverRequestId, reverse the sender/receiver
-                return [
-                    'sender_id' => $message->sender_id,  // Use actual sender_id from the message
-                    'receiver_id' => $message->reciever_id,  // Use actual receiver_id from the message
-                    'message' => $message->message,
-                ];
-            }
+            return [
+                'sender_id' => $message->sender_id,
+                'receiver_id' => $message->reciever_id,
+                'message' => $message->message,
+                'order' => $message->order,
+                'message_sent_at' => $message->message_sent_at,
+            ];
         });
-    
-        // Return the formatted messages as a JSON response
+
         return response()->json($responseMessages);
     }
-    
 }

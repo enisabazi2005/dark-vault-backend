@@ -133,7 +133,7 @@ class FriendReqestsController extends Controller
         }
     
         // Retrieve friends' details by their IDs
-        $friends = DarkUsers::whereIn('id', $friendIds)->get(['id', 'name', 'lastname', 'request_id', 'gender', 'birthdate', 'age']); 
+        $friends = DarkUsers::whereIn('id', $friendIds)->get(['id', 'name', 'lastname', 'request_id', 'gender', 'birthdate', 'age','picture']); 
     
         // Return the list of friends with more details
         return response()->json($friends);
