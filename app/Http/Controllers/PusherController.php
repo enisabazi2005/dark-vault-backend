@@ -43,6 +43,8 @@ class PusherController extends Controller
                 'message_sent_at' => now(),
             ]);
 
+            $message = Message::find($message->id);
+
             broadcast(new NewMessage($message));
             Log::info(['message sent', $message]);
             return response()->json(['message' => 'Message sent successfully'], 201);
@@ -75,7 +77,6 @@ class PusherController extends Controller
         if ($messages->isEmpty()) {
             return response()->json(['message' => 'No messages found'], 404);
         }
-
         $responseMessages = $messages->map(function ($message) use ($sender, $receiver) {
             return [
                 'sender_id' => $message->sender_id,
