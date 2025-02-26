@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\UnreadMessagesEvent;
 use App\Http\Resources\DarkUserResource;
 use App\Models\DarkUsers;
+use App\Models\Notification;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class DarkUserController extends Controller
 {
@@ -40,6 +43,20 @@ class DarkUserController extends Controller
         if (!$user) {
             return response()->json(['No User has been found', 404]);
         }
+
+        if ($request->status === 'online') {
+            $unreadMessages = Notification::where('dark_user_id', $user->id)
+                ->where('is_read', false)
+                ->get();
+        
+            Log::info('Fetched unread messages for user: ' . $user->id, ['unreadMessagesCount' => $unreadMessages->count()]);
+        
+            if ($unreadMessages->count() > 0) {
+                // Broadcast event with only the user ID for the channel name, and the unread messages inside the event
+                broadcast(new UnreadMessagesEvent($unreadMessages, $user->id));
+            }
+        }
+
         $user->update([
             'online' => false,
             'offline' => false,

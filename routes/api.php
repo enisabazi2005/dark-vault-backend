@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DarkUserController;
 use App\Http\Controllers\FriendReqestsController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PusherController;
 use App\Http\Controllers\StoreEmailController;
 use App\Http\Controllers\StoreNotesController;
@@ -26,6 +27,9 @@ Route::post('/send-message', [PusherController::class, 'store']);
 Route::get('/messages/{senderRequestId}/{receiverRequestId}', [PusherController::class , 'getMessages']);
 // Route::middleware('auth:sanctum', Authenticate::class)->group(function () {
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
+    Route::get('/get-unread-messages', [NotificationController::class , 'getUnreadMessages']);
+    Route::post('/mark-notifications-read', [NotificationController::class, 'markNotificationRead']);
+
     Route::post('/update-settings', [DarkUserController::class, 'updateSettings']);
 
     Route::post('/update-status', [DarkUserController::class, 'updateStatus']);

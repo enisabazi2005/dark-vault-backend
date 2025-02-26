@@ -6,6 +6,7 @@ use App\Events\NewMessage; // You'll create the event
 use App\Jobs\BroadcastNewMessage;
 use App\Models\DarkUsers;
 use App\Models\Message;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -42,11 +43,35 @@ class PusherController extends Controller
                 'order' => $order,
                 'message_sent_at' => now(),
             ]);
+            $receiver = DarkUsers::where('request_id', $validated['reciever_id'])->first();
+            $sender = DarkUsers::where('request_id', $validated['sender_id'])->first();
+
+            if ($receiver) { 
+                Log::info('Receiver Status:', ['offline' => $receiver->offline]);
+            
+                if ($receiver->offline == true) {
+                    try {
+                        $notification = Notification::create([
+                            'dark_user_id' => $receiver->id,
+                            'sender_id' => $sender->id,
+                            'message' => $validated['message'],
+                        ]);
+            
+                        Log::info(['Notification created:', $notification]);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to create notification:', ['error' => $e->getMessage()]);
+                        return response()->json(['error' => $e->getMessage()], 500);
+                    }
+                }
+            } else {
+                Log::warning('Receiver not found for request_id: ' . $validated['reciever_id']);
+            }
+            
 
             $message = Message::find($message->id);
 
             broadcast(new NewMessage($message));
-            Log::info(['message sent', $message]);
+            // Log::info(['message sent', $message]);
             return response()->json(['message' => 'Message sent successfully'], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
