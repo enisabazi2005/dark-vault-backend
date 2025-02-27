@@ -33,41 +33,40 @@ class DarkUserController extends Controller
     }
 
     public function updateStatus(Request $request)
-    {
-        $request->validate([
-            'status' => 'required|in:online,offline,away,do_not_disturb',
-        ]);
+{
+    $request->validate([
+        'status' => 'required|in:online,offline,away,do_not_disturb',
+    ]);
 
-        $user = Auth::user();
+    $user = Auth::user();
 
-        if (!$user) {
-            return response()->json(['No User has been found', 404]);
+    if (!$user) {
+        return response()->json(['error' => 'No User found'], 404);
+    }
+    if ($request->status === 'online' && $request->status === 'offline') {
+        $unreadMessages = Notification::where('dark_user_id', $user->id)
+            ->where('is_read', false)
+            ->get();
+    
+        Log::info('Fetched unread messages for user: ' . $user->id, ['unreadMessagesCount' => $unreadMessages->count()]);
+    
+        if ($unreadMessages->count() > 0) {
+            broadcast(new UnreadMessagesEvent($unreadMessages, $user->id));
         }
-
-        if ($request->status === 'online') {
-            $unreadMessages = Notification::where('dark_user_id', $user->id)
-                ->where('is_read', false)
-                ->get();
-        
-            Log::info('Fetched unread messages for user: ' . $user->id, ['unreadMessagesCount' => $unreadMessages->count()]);
-        
-            if ($unreadMessages->count() > 0) {
-                // Broadcast event with only the user ID for the channel name, and the unread messages inside the event
-                broadcast(new UnreadMessagesEvent($unreadMessages, $user->id));
-            }
-        }
-
-        $user->update([
-            'online' => false,
-            'offline' => false,
-            'away' => false,
-            'do_not_disturb' => false,
-            $request->status => true,
-        ]);
-
-        return response()->json(['Status updated successfully', 200]);
     }
 
+    $user->update([
+        'online' => false,
+        'offline' => false,
+        'away' => false,
+        'do_not_disturb' => false,
+        $request->status => true,
+    ]);
+
+    return response()->json(['message' => 'Status updated successfully']);
+}
+
+    
     public function getStatus()
     {
         $user = Auth::user();

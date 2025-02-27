@@ -9,6 +9,7 @@ use App\Http\Controllers\StoreEmailController;
 use App\Http\Controllers\StoreNotesController;
 use App\Http\Controllers\StorePasswordController;
 use App\Http\Controllers\StorePrivateInfoController;
+use App\Http\Controllers\UserMuteController;
 use App\Http\Middleware\Authenticate;
 use App\Models\FriendRequests;
 use Illuminate\Http\Request;
@@ -17,16 +18,18 @@ use Illuminate\Support\Facades\Route;
 
 
 
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::apiResource('/friend-requests', FriendRequests::class);
-// Route::apiResource('/store-passwords', StorePasswordController::class);
 Route::get('/users', [DarkUserController::class, 'index']);
 Route::post('/send-message', [PusherController::class, 'store']);
 Route::get('/messages/{senderRequestId}/{receiverRequestId}', [PusherController::class , 'getMessages']);
-// Route::middleware('auth:sanctum', Authenticate::class)->group(function () {
+
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
+    Route::post('/mute-unmute', [UserMuteController::class, 'muteUnmuteUser']);
+
     Route::get('/get-unread-messages', [NotificationController::class , 'getUnreadMessages']);
     Route::post('/mark-notifications-read', [NotificationController::class, 'markNotificationRead']);
 

@@ -33,13 +33,11 @@ class UnreadMessagesEvent implements ShouldBroadcastNow
      */
     public function broadcastOn()
     {
-        // Ensure the channel name is only the user ID (no unread messages in the name)
-        return new Channel('unread-messages-' . $this->userId);  // Correct channel format
+        return new Channel('unread-messages-' . $this->userId);  
     }
 
     public function broadcastWith()
     {
-        // The unread messages should be sent inside the event data
         return [
             'notifications' => $this->notifications,
         ];

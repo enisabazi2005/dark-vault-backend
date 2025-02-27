@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\NewMessage; // You'll create the event
+use App\Events\NewMessage; 
+use App\Events\UnreadMessagesEvent;
 use App\Jobs\BroadcastNewMessage;
 use App\Models\DarkUsers;
 use App\Models\Message;
@@ -46,17 +47,18 @@ class PusherController extends Controller
             $receiver = DarkUsers::where('request_id', $validated['reciever_id'])->first();
             $sender = DarkUsers::where('request_id', $validated['sender_id'])->first();
 
-            if ($receiver) { 
-                Log::info('Receiver Status:', ['offline' => $receiver->offline]);
-            
-                if ($receiver->offline == true) {
+            if ($receiver) {
+                if ($receiver->offline == true || $receiver->online || $receiver->away) {
                     try {
                         $notification = Notification::create([
                             'dark_user_id' => $receiver->id,
                             'sender_id' => $sender->id,
+                            'sender_name' => $sender->name,
                             'message' => $validated['message'],
                         ]);
-            
+        
+                        broadcast(new UnreadMessagesEvent([$notification], $receiver->id));
+        
                         Log::info(['Notification created:', $notification]);
                     } catch (\Exception $e) {
                         Log::error('Failed to create notification:', ['error' => $e->getMessage()]);
@@ -71,14 +73,13 @@ class PusherController extends Controller
             $message = Message::find($message->id);
 
             broadcast(new NewMessage($message));
-            // Log::info(['message sent', $message]);
             return response()->json(['message' => 'Message sent successfully'], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-
+    
     public function getMessages($senderRequestId, $receiverRequestId)
     {
         $sender = DarkUsers::where('id', $senderRequestId)->first();

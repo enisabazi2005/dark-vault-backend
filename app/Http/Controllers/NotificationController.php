@@ -13,6 +13,8 @@ class NotificationController extends Controller
 
         $unreadMessages = Notification::where('dark_user_id', $user->id)
         ->where('is_read', false)
+        ->join('dark_users', 'dark_users.id', '=', 'notifications.sender_id')  
+        ->select('notifications.*', 'dark_users.name as sender_name', 'dark_users.lastname as sender_lastname')  
         ->get();
 
         return response()->json($unreadMessages);
