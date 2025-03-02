@@ -3,7 +3,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "start": "php artisan serve --host=0.0.0.0 --port=80"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.20",
