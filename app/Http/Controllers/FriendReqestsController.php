@@ -103,10 +103,16 @@ class FriendReqestsController extends Controller
             }
     
             return response()->json(['message' => 'Friend Request Accepted']);
+        } elseif ($request->action === 'reject') {
+            // Simply delete the friend request without adding them as a friend
+            $friendRequest->delete();
+    
+            return response()->json(['message' => 'Friend Request Rejected']);
         }
     
         return response()->json(['message' => 'Invalid action'], 400);
     }
+    
     
     public function getFriends(Request $request) { 
         // Retrieve the user by their request_id

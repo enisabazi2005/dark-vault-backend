@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\UnreadMessagesEvent;
 use App\Http\Resources\DarkUserResource;
 use App\Models\DarkUsers;
+use App\Models\FriendRequests;
 use App\Models\Notification;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Http\Request;
@@ -123,4 +124,47 @@ class DarkUserController extends Controller
             'user' => $user
         ]);
     }
+    public function getUserWithFriends($request_id) { 
+        // Retrieve the user by their request_id
+        $user = DarkUsers::where('request_id', $request_id)->first();
+    
+        if (!$user) { 
+            return response()->json(['message' => 'User not found'], 400);
+        }
+    
+        // Retrieve accepted friends for the user
+        $friendRequests = FriendRequests::where('dark_user_id', $user->id)
+            ->where('is_accepted', true)
+            ->get(['friend']);
+    
+        // Check if the user has any friends
+        if ($friendRequests->isEmpty()) { 
+            return response()->json([
+                'name' => $user->name,
+                'lastname' => $user->lastname,
+                'friends_count' => 0,
+                'friends' => [],
+                'message' => 'No friends found'
+            ]);
+        }
+    
+        // Decode the 'friend' field to get an array of friend IDs
+        $friendIds = [];
+        foreach ($friendRequests as $request) {
+            $friendIds = array_merge($friendIds, json_decode($request->friend, true)); // Decoding the JSON
+        }
+    
+        // Retrieve friends' details by their IDs
+        $friends = DarkUsers::whereIn('id', $friendIds)
+            ->get(['id', 'name', 'lastname', 'request_id', 'gender', 'birthdate', 'age', 'picture']); 
+    
+        // Return the user details along with their friends
+        return response()->json([
+            'name' => $user->name,
+            'lastname' => $user->lastname,
+            'friends_count' => $friends->count(),
+            'friends' => $friends
+        ]);
+    }
+    
 }

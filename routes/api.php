@@ -28,6 +28,8 @@ Route::post('/send-message', [PusherController::class, 'store']);
 Route::get('/messages/{senderRequestId}/{receiverRequestId}', [PusherController::class , 'getMessages']);
 
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
+    Route::get('/dark-user/{request_id}/friends', [DarkUserController::class, 'getUserWithFriends']);
+
     Route::post('/mute-unmute', [UserMuteController::class, 'muteUnmuteUser']);
 
     Route::get('/get-unread-messages', [NotificationController::class , 'getUnreadMessages']);

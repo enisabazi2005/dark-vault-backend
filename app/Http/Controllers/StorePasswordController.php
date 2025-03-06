@@ -25,7 +25,7 @@ class StorePasswordController extends Controller
     
         $storePassword = StorePassword::create([
             'dark_users_id' => $userId, 
-            'password' => bcrypt($request->password), 
+            'password' => $request->password, 
         ]);
     
         return response()->json($storePassword, 201);
@@ -47,7 +47,7 @@ class StorePasswordController extends Controller
 
         $storePassword = StorePassword::where('dark_users_id', Auth::user()->id)->findOrFail($id);
 
-        $storePassword->password = bcrypt($request->password); 
+        $storePassword->password = $request->password; 
         $storePassword->save();
 
         return response()->json($storePassword);
