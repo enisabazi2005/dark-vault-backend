@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BlockedUsersController;
 use App\Http\Controllers\DarkUserController;
 use App\Http\Controllers\FriendReqestsController;
 use App\Http\Controllers\NotificationController;
@@ -28,7 +29,12 @@ Route::post('/send-message', [PusherController::class, 'store']);
 Route::get('/messages/{senderRequestId}/{receiverRequestId}', [PusherController::class , 'getMessages']);
 
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
-    Route::get('/dark-user/{request_id}/friends', [DarkUserController::class, 'getUserWithFriends']);
+    Route::post('/remove-friend/{request_id}', [FriendReqestsController::class, 'unfriend']);
+    Route::post('/block-user/{request_id}', [BlockedUsersController::class, 'blockUsers']);
+    Route::get('/blocked-users', [BlockedUsersController::class, 'getBlockedUsers']);
+    Route::get('/blocked-by', [BlockedUsersController::class, 'getUsersWhoBlockedMe']);
+
+    Route::get('/dark-user/{request_id}/get-friends', [DarkUserController::class, 'getUserWithFriends']);
 
     Route::post('/mute-unmute', [UserMuteController::class, 'muteUnmuteUser']);
 
