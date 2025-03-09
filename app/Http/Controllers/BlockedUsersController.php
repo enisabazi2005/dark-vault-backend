@@ -35,22 +35,45 @@ class BlockedUsersController extends Controller
 
         return response()->json(['message' => 'User blocked successfully']);
     }
+
+    public function unblockUsers($request_id)
+    {
+        $user = Auth::user();
+        $unblockedUser = DarkUsers::where('request_id', $request_id)->first();
+
+        if (!$unblockedUser) {
+            return response()->json(['message' => 'User not found'], 400);
+        }
+
+        $blockedEntry = BlockedUsers::where('blocker_id', $user->id)
+            ->where('blocked_id', $unblockedUser->id)
+            ->first();
+
+        if (!$blockedEntry) {
+            return response()->json(['message' => 'User is not blocked'], 400);
+        }
+
+        $blockedEntry->delete();
+
+        return response()->json(['message' => 'User unblocked successfully']);
+    }
+
     public function getBlockedUsers()
     {
         $user = Auth::user();
 
         $blockedUsers = BlockedUsers::where('blocker_id', $user->id)
-            ->with('blockedUser') 
+            ->with('blockedUser')
             ->get()
             ->map(function ($blockedUser) {
-                return $blockedUser->blockedUser;  
+                return $blockedUser->blockedUser;
             });
 
         if ($blockedUsers->isEmpty()) {
             return response()->json(['message' => 'No blocked users found'], 200);
         }
 
-        return response()->json($blockedUsers, 200);  
+        return response()->json($blockedUsers, 200);
     }
 
     public function getUsersWhoBlockedMe()

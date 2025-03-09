@@ -30,9 +30,12 @@ Route::get('/messages/{senderRequestId}/{receiverRequestId}', [PusherController:
 
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::post('/remove-friend/{request_id}', [FriendReqestsController::class, 'unfriend']);
+    Route::get('/unfriended-users', [FriendReqestsController::class , 'getUnfriendedUsers']);
     Route::post('/block-user/{request_id}', [BlockedUsersController::class, 'blockUsers']);
     Route::get('/blocked-users', [BlockedUsersController::class, 'getBlockedUsers']);
     Route::get('/blocked-by', [BlockedUsersController::class, 'getUsersWhoBlockedMe']);
+    Route::post('/unblock-user/{request_id}', [BlockedUsersController::class, 'unblockUsers']);
+
 
     Route::get('/dark-user/{request_id}/get-friends', [DarkUserController::class, 'getUserWithFriends']);
 
