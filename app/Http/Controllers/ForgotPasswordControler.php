@@ -46,29 +46,35 @@ class ForgotPasswordControler extends Controller
             return response()->json(['message' => 'Invalid or expired code'], 400);
         }
     
+        // Update the verified flag properly
+        $resetEntry->verified = true;
+        $resetEntry->save();
+    
         return response()->json(['message' => 'Code verified successfully']);
     }
+    
 
     public function resetPassword(Request $request) {
         $request->validate([
             'email' => 'required|email|exists:dark_users,email',
-            'code' => 'required|digits:6',
             'password' => 'required|min:6|confirmed'
         ]);
     
         $resetEntry = PasswordReset::where('email', $request->email)
-                                   ->where('code', $request->code)
+                                   ->where('verified', true)
                                    ->first();
     
         if (!$resetEntry) {
-            return response()->json(['message' => 'Invalid or expired code'], 400);
+            return response()->json(['message' => 'Reset code not verified or expired'], 400);
         }
     
+        // Update the password
         $user = DarkUsers::where('email', $request->email)->first();
         $user->update(['password' => bcrypt($request->password)]);
     
+        // Delete the reset entry from the table
         $resetEntry->delete();
     
-        return response()->json(['message' => 'Password reset successfully']);
+        return response()->json(['message' => "Password changed for {$request->email}"]);
     }
 }
