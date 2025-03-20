@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlockedUsersController;
 use App\Http\Controllers\DarkUserController;
+use App\Http\Controllers\ForgotPasswordControler;
 use App\Http\Controllers\FriendReqestsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PusherController;
@@ -12,12 +13,10 @@ use App\Http\Controllers\StorePasswordController;
 use App\Http\Controllers\StorePrivateInfoController;
 use App\Http\Controllers\UserMuteController;
 use App\Http\Middleware\Authenticate;
+use App\Mail\PasswordResetMail;
 use App\Models\FriendRequests;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-
-
-
+use Illuminate\Support\Facades\Mail;
 
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -76,3 +75,6 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::put('/store-note/{id}', [StoreNotesController::class, 'update']);
     Route::delete('/store-note/{id}', [StoreNotesController::class, 'destroy']);
 });
+Route::post('/forgot-password', [ForgotPasswordControler::class, 'sendResetCode']);
+Route::post('/verify-reset-code', [ForgotPasswordControler::class, 'verifyResetCode']);
+Route::post('/reset-password', [ForgotPasswordControler::class, 'resetPassword']);
