@@ -27,7 +27,11 @@ Route::get('/users', [DarkUserController::class, 'index']);
 Route::post('/send-message', [PusherController::class, 'store']);
 Route::get('/messages/{senderRequestId}/{receiverRequestId}', [PusherController::class , 'getMessages']);
 
+
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
+    Route::post('/mark-as-seen', [PusherController::class, 'markAsSeen']); 
+
+    
     Route::post('/remove-friend/{request_id}', [FriendReqestsController::class, 'unfriend']);
     Route::get('/unfriended-users', [FriendReqestsController::class , 'getUnfriendedUsers']);
     Route::post('/block-user/{request_id}', [BlockedUsersController::class, 'blockUsers']);

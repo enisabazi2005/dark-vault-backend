@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Events\NewMessage; 
 use App\Events\UnreadMessagesEvent;
+use App\Events\MessageSeenEvent;
+use App\Events\TypingIndicator;
 use App\Jobs\BroadcastNewMessage;
 use App\Models\DarkUsers;
 use App\Models\Message;
@@ -115,4 +117,33 @@ class PusherController extends Controller
 
         return response()->json($responseMessages);
     }
+
+    public function typingIndicator(Request $request)
+{
+    $validated = $request->validate([
+        'sender_id' => 'required|string|exists:dark_users,request_id',
+        'receiver_id' => 'required|string|exists:dark_users,request_id',
+        'is_typing' => 'required|boolean'
+    ]);
+
+broadcast(new TypingIndicator($validated['sender_id'], $validated['receiver_id'], $validated['is_typing']));
+    return response()->json(['status' => 'Typing indicator broadcasted']);
+}
+public function markAsSeen(Request $request)
+{
+    $validated = $request->validate([
+        'message_id' => 'required|exists:messages,id'
+    ]);
+
+    $message = Message::find($validated['message_id']);
+
+    if ($message->seen_at === null) {
+        $message->seen_at = now();
+        $message->save();
+
+        broadcast(new MessageSeenEvent($message));
+    }
+
+    return response()->json(['message' => 'Message marked as seen']);
+}
 }
