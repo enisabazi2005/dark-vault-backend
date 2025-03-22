@@ -45,6 +45,7 @@ class PusherController extends Controller
                 'dark_users_id' => $validated['dark_users_id'],
                 'order' => $order,
                 'message_sent_at' => now(),
+                'seen_at' => null,
             ]);
             $receiver = DarkUsers::where('request_id', $validated['reciever_id'])->first();
             $sender = DarkUsers::where('request_id', $validated['sender_id'])->first();
@@ -107,11 +108,13 @@ class PusherController extends Controller
         }
         $responseMessages = $messages->map(function ($message) use ($sender, $receiver) {
             return [
+                'id' => $message->id,
                 'sender_id' => $message->sender_id,
                 'receiver_id' => $message->reciever_id,
                 'message' => $message->message,
                 'order' => $message->order,
                 'message_sent_at' => $message->message_sent_at,
+                'seen_at' => $message->seen_at,
             ];
         });
 

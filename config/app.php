@@ -130,7 +130,7 @@ return [
     //      */
     //     App\Providers\AppServiceProvider::class,
     //     App\Providers\AuthServiceProvider::class,
-    //     App\Providers\BroadcastServiceProvider::class,
+    //     App\Providers\BroadcastServiceProvider::class,php
     //     App\Providers\RouteServiceProvider::class, // Add this line
     // ],
     
