@@ -132,21 +132,57 @@ class PusherController extends Controller
 broadcast(new TypingIndicator($validated['sender_id'], $validated['receiver_id'], $validated['is_typing']));
     return response()->json(['status' => 'Typing indicator broadcasted']);
 }
-public function markAsSeen(Request $request)
-{
-    $validated = $request->validate([
-        'message_id' => 'required|exists:messages,id'
-    ]);
+    public function markAsSeen(Request $request)
+    {
+        $validated = $request->validate([
+            'sender_id' => 'required|exists:dark_users,request_id',
+            'receiver_id' => 'required|exists:dark_users,request_id',
+        ]);
 
-    $message = Message::find($validated['message_id']);
+        // Find the latest message between the sender and receiver
+        $message = Message::where('sender_id', $validated['sender_id'])
+            ->where('reciever_id', $validated['receiver_id'])
+            ->latest('created_at') // Get the most recent message
+            ->first();
 
-    if ($message->seen_at === null) {
-        $message->seen_at = now();
-        $message->save();
+        if ($message && $message->seen_at === null) {
+            $message->seen_at = now();
+            $message->save();
 
-        broadcast(new MessageSeenEvent($message));
+            broadcast(new MessageSeenEvent($message));
+        }
+
+        return response()->json(['message' => 'Message marked as seen']);
     }
 
-    return response()->json(['message' => 'Message marked as seen']);
-}
+    public function getMessageStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'sender_id' => 'required|exists:dark_users,request_id',
+            'receiver_id' => 'required|exists:dark_users,request_id',
+        ]);
+
+        // Fetch the latest message between sender and receiver
+        $message = Message::where(function ($query) use ($validated) {
+                $query->where('sender_id', $validated['sender_id'])
+                      ->where('reciever_id', $validated['receiver_id']);
+            })
+            ->orWhere(function ($query) use ($validated) {
+                $query->where('sender_id', $validated['receiver_id'])
+                      ->where('reciever_id', $validated['sender_id']);
+            })
+            ->latest('created_at')
+            ->first();
+
+        if ($message) {
+            // ✅ Fire event to update real-time seen status
+            broadcast(new MessageSeenEvent($message));
+        }
+
+        return response()->json([
+            'message_id' => $message?->id,
+            'seen_at' => $message?->seen_at,
+        ]);
+    }
+
 }

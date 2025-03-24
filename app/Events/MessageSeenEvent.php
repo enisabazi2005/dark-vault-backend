@@ -34,12 +34,14 @@ class MessageSeenEvent implements ShouldBroadcastNow
     {
         return new Channel('message-seen.' . $this->message->sender_id);
     }
-
+    
     public function broadcastWith()
     {
         return [
             'message_id' => $this->message->id,
-            'seen_at' => $this->message->seen_at
+            'seen_at' => $this->message->seen_at,
+            'sender_id' => $this->message->sender_id,
+            'reciever_id' => $this->message->reciever_id,
         ];
     }
 }

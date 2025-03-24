@@ -27,6 +27,7 @@ Route::get('/users', [DarkUserController::class, 'index']);
 Route::post('/send-message', [PusherController::class, 'store']);
 Route::get('/messages/{senderRequestId}/{receiverRequestId}', [PusherController::class , 'getMessages']);
 
+Route::get('/message-status', [PusherController::class , 'getMessageStatus']);
 
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::post('/mark-as-seen', [PusherController::class, 'markAsSeen']); 
