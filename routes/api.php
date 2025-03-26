@@ -17,6 +17,8 @@ use App\Mail\PasswordResetMail;
 use App\Models\FriendRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\GroupUserController;
+use App\Http\Controllers\GroupAnswerController;
 
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -30,9 +32,19 @@ Route::get('/messages/{senderRequestId}/{receiverRequestId}', [PusherController:
 Route::get('/message-status', [PusherController::class , 'getMessageStatus']);
 
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
+
+    Route::patch('/groups/{groupId}/remove-user', [GroupUserController::class, 'removeUser']);
+    Route::get('/groups/pending', [GroupUserController::class, 'getPendingGroups']);
+    Route::patch('/groups/{groupId}/respond', [GroupAnswerController::class, 'respondToInvite']);
+    Route::get('/groups/member', [GroupUserController::class, 'getUserGroups']);
+
+
+    Route::post('/groups/create', [GroupUserController::class, 'createGroup']);
+    Route::patch('/groups/edit/{groupId}', [GroupUserController::class, 'editGroup']);
+    Route::get('/groups', [GroupUserController::class, 'getGroups']);
+
     Route::post('/mark-as-seen', [PusherController::class, 'markAsSeen']); 
 
-    
     Route::post('/remove-friend/{request_id}', [FriendReqestsController::class, 'unfriend']);
     Route::get('/unfriended-users', [FriendReqestsController::class , 'getUnfriendedUsers']);
     Route::post('/block-user/{request_id}', [BlockedUsersController::class, 'blockUsers']);
