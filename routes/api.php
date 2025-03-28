@@ -40,6 +40,8 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
 
 
     Route::post('/groups/create', [GroupUserController::class, 'createGroup']);
+    Route::post('groups/invite', [GroupUserController::class, 'inviteToGroup']);
+    Route::post('group/{groupId}/promote', [GroupUserController::class, 'promoteToSemiAdmin']);
     Route::patch('/groups/edit/{groupId}', [GroupUserController::class, 'editGroup']);
     Route::get('/groups', [GroupUserController::class, 'getGroups']);
 
