@@ -23,6 +23,7 @@ use App\Http\Controllers\GroupAnswerController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 
 Route::apiResource('/friend-requests', FriendRequests::class);
 Route::get('/users', [DarkUserController::class, 'index']);

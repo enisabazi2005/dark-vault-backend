@@ -7,6 +7,7 @@ use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Console\Scheduling\Schedule;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +24,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+
+        $this->app->booted(function () {
+            $schedule = app(Schedule::class);
+            
+            $schedule->command('verification:clear-expired')->monthly();
+        });
         // Listen for the Login event
         Event::listen(Login::class, function ($event) {
             $user = $event->user;

@@ -6,6 +6,9 @@ use App\Models\DarkUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OtpMail;
+use App\Models\OtpVerification;
 
 class AuthController extends Controller {
     public function register(Request $request) {
@@ -48,23 +51,83 @@ class AuthController extends Controller {
         ], 201);
     }
 
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required'
         ]);
-
+    
         $user = DarkUsers::where('email', $credentials['email'])->first();
-
+    
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
-
+    
+        $otpRecord = OtpVerification::where('dark_users_id', $user->id)->first();
+    
+        $isVerified = $otpRecord ? $otpRecord->is_verified : false;
+    
+        if ($isVerified) {
+            $token = $user->createToken('dark_vault_token')->plainTextToken;
+    
+            return response()->json([
+                'message' => 'Login successful',
+                'user' => $user,
+                'token' => $token,
+                'is_verified' => true
+            ]);
+        }
+    
+        // Generate OTP if not verified
+        $otpCode = rand(100000, 999999);
+        OtpVerification::updateOrCreate(
+            ['dark_users_id' => $user->id],
+            ['otp_code' => $otpCode, 'is_verified' => false, 'verified_at' => null]
+        );
+    
+        // Send OTP via email
+        Mail::to($user->email)->send(new OtpMail($otpCode));
+    
         $token = $user->createToken('dark_vault_token')->plainTextToken;
-
+    
         return response()->json([
+            'message' => 'OTP sent to your email. Please verify to continue.',
             'user' => $user,
-            'token' => $token
+            'token' => $token,
+            'is_verified' => false
         ]);
     }
+
+    public function verifyOtp(Request $request)
+{
+    $request->validate([
+        'user_id' => 'required|exists:dark_users,id',
+        'otp_code' => 'required|digits:6'
+    ]);
+
+    $otpRecord = OtpVerification::where('dark_users_id', $request->user_id)
+                                ->where('otp_code', $request->otp_code)
+                                ->first();
+
+    if (!$otpRecord) {
+        return response()->json(['error' => 'Invalid OTP'], 400);
+    }
+
+    // Mark OTP as verified
+    $otpRecord->update([
+        'is_verified' => true,
+        'verified_at' => now()
+    ]);
+
+    // Generate auth token
+    $user = DarkUsers::find($request->user_id);
+    $token = $user->createToken('dark_vault_token')->plainTextToken;
+
+    return response()->json([
+        'message' => 'OTP verified successfully.',
+        'token' => $token,
+        'user' => $user
+    ]);
+}
 }
