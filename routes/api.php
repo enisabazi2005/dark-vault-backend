@@ -18,8 +18,8 @@ use App\Models\FriendRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\GroupUserController;
-use App\Http\Controllers\GroupAnswerController;
-
+use App\Http\Controllers\GroupAnswerController; 
+use App\Http\Controllers\BackgroundColorController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -33,6 +33,9 @@ Route::get('/messages/{senderRequestId}/{receiverRequestId}', [PusherController:
 Route::get('/message-status', [PusherController::class , 'getMessageStatus']);
 
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
+
+    Route::get('/background', [BackgroundColorController::class, 'getBackground']);
+    Route::post('/background', [BackgroundColorController::class, 'updateBackground']);
 
     Route::patch('/groups/{groupId}/remove-user', [GroupUserController::class, 'removeUser']);
     Route::get('/groups/pending', [GroupUserController::class, 'getPendingGroups']);
