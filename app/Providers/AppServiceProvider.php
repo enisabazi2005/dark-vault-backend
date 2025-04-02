@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Console\Scheduling\Schedule;
+use App\Http\Middleware\CorsMiddleware;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+
+        $this->app->middleware([
+            CorsMiddleware::class,
+        ]);
 
         $this->app->booted(function () {
             $schedule = app(Schedule::class);
