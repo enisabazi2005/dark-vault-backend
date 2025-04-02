@@ -26,9 +26,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
 
-        $this->app->middleware([
-            CorsMiddleware::class,
-        ]);
 
         $this->app->booted(function () {
             $schedule = app(Schedule::class);

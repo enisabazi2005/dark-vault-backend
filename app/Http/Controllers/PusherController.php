@@ -78,18 +78,18 @@ class PusherController extends Controller
             broadcast(new NewMessage($message));
             // return response()->json(['message' => 'Message sent successfully'], 201);
             return response()->json([
-                'message' => 'Message sent successfully',
-                'data' => [
-                    'id' => $message->id,
-                    'sender_id' => $message->sender_id,
-                    'reciever_id' => $message->reciever_id,
-                    'message' => $message->message,
-                    'dark_users_id' => $message->dark_users_id,
-                    'order' => $message->order,
-                    'message_sent_at' => $message->message_sent_at,
-                    'seen_at' => $message->seen_at,
-                ],
-            ], 201);
+    'message' => 'Message sent successfully',
+    'data' => [
+        'id' => $message->id,
+        'sender_id' => $message->sender_id,
+        'reciever_id' => $message->reciever_id,
+        'message' => $message->message,
+        'dark_users_id' => $message->dark_users_id,
+        'order' => $message->order,
+        'message_sent_at' => $message->message_sent_at,
+        'seen_at' => $message->seen_at,
+    ],
+], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
