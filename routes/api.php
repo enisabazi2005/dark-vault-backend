@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\GroupUserController;
 use App\Http\Controllers\GroupAnswerController; 
 use App\Http\Controllers\BackgroundColorController;
+use App\Models\MessageReactions;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -31,8 +32,16 @@ Route::post('/send-message', [PusherController::class, 'store']);
 Route::get('/messages/{senderRequestId}/{receiverRequestId}', [PusherController::class , 'getMessages']);
 
 Route::get('/message-status', [PusherController::class , 'getMessageStatus']);
+Route::post('/message/{id}/react', [PusherController::class, 'react']);
+Route::get('/reactions/grouped', function () {
+    return MessageReactions::all()->groupBy('message_id');
+});
+
+
+
 
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
+    Route::delete('/message/{messageId}/react', [PusherController::class, 'deleteReaction']);
 
     Route::get('/background', [BackgroundColorController::class, 'getBackground']);
     Route::post('/background', [BackgroundColorController::class, 'updateBackground']);

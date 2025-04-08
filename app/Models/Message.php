@@ -19,4 +19,10 @@ class Message extends Model
         'message_sent_at',
         'seen_at',
     ];
+
+    public function reactions()
+    {
+        return $this->hasMany(MessageReactions::class, 'message_id');
+    }
+
 }
