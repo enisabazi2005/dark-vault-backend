@@ -40,6 +40,7 @@ class PusherController extends Controller
                 ->latest('order')
                 ->first();
 
+
             $order = $lastMessage ? $lastMessage->order + 1 : 1;
 
             $message = Message::create([
@@ -63,7 +64,6 @@ class PusherController extends Controller
                             'sender_name' => $sender->name,
                             'message' => $validated['message'],
                         ]);
-
                         broadcast(new UnreadMessagesEvent([$notification], $receiver->id));
 
                         Log::info(['Notification created:', $notification]);

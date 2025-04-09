@@ -36,9 +36,9 @@ Route::post('/message/{id}/react', [PusherController::class, 'react']);
 Route::get('/reactions/grouped', function () {
     return MessageReactions::all()->groupBy('message_id');
 });
-
-
-
+Route::get('/password-reset/track/{code}/{email}', [ForgotPasswordControler::class, 'track']);
+Route::get('/password-reset/verify/{code}/{email}', [ForgotPasswordControler::class, 'verify']);
+Route::get('/check-verification-status', [ForgotPasswordControler::class, 'checkVerificationStatus']);
 
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::delete('/message/{messageId}/react', [PusherController::class, 'deleteReaction']);
@@ -108,5 +108,5 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::delete('/store-note/{id}', [StoreNotesController::class, 'destroy']);
 });
 Route::post('/forgot-password', [ForgotPasswordControler::class, 'sendResetCode']);
-Route::post('/verify-reset-code', [ForgotPasswordControler::class, 'verifyResetCode']);
+Route::post('/verify-reset-code', action: [ForgotPasswordControler::class, 'verifyResetCode']);
 Route::post('/reset-password', [ForgotPasswordControler::class, 'resetPassword']);

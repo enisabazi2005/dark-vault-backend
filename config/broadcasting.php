@@ -40,6 +40,10 @@ return [
                 'port' => env('REVERB_PORT', 443),
                 'scheme' => env('REVERB_SCHEME', 'https'),
                 'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
+                'curl_options' => [
+                    CURLOPT_SSL_VERIFYHOST => 0,
+                    CURLOPT_SSL_VERIFYPEER => 0,
+                ],
             ],
             'client_options' => [
                 // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html
@@ -55,7 +59,7 @@ return [
         'cluster' => env('PUSHER_APP_CLUSTER'),
         'host' => env('PUSHER_HOST') ?: 'api-'.env('PUSHER_APP_CLUSTER', 'mt1').'.pusher.com',
         'port' => env('PUSHER_PORT', 443),
-        'scheme' => env('PUSHER_SCHEME', 'https'),
+        'scheme' => env('PUSHER_SCHEME', 'http'),
         'encrypted' => true,
         'useTLS' => env('PUSHER_SCHEME', 'https') === 'https',
     ],

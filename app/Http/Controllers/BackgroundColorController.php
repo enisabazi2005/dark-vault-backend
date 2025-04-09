@@ -10,17 +10,17 @@ use App\Models\BackgroundColor;
 class BackgroundColorController extends Controller
 {
     public function getBackground()
-{
-    $user = Auth::user();
-    $userId = $user->id;
-    $background = BackgroundColor::where('dark_users_id', $userId)->first();
+    {
+        $user = Auth::user();
+        $userId = $user->id;
+        $background = BackgroundColor::where('dark_users_id', $userId)->first();
 
-    if (!$background) {
-        return response()->json(['message' => 'No background found'], 404); 
+        if (!$background) {
+            return response()->json(['message' => 'No background found'], 404);
+        }
+
+        return response()->json(['option' => $background->option]);
     }
-
-    return response()->json(['option' => $background->option]);
-}
 
 
     public function updateBackground(Request $request)
@@ -38,5 +38,4 @@ class BackgroundColorController extends Controller
 
         return response()->json(['message' => 'Background updated successfully', 'option' => $background->option]);
     }
-
 }
