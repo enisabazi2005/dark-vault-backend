@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OtpMail;
 use App\Models\OtpVerification;
+use App\Mail\WelcomeMail;
 
 class AuthController extends Controller {
     public function register(Request $request) {
@@ -41,6 +42,9 @@ class AuthController extends Controller {
             'picture' => $request->file('picture') ? $request->file('picture')->store('profile_pictures', 'public') : null,
             'request_id' => strtoupper(\Illuminate\Support\Str::random(8)),
         ]);
+
+        Mail::to($user->email)->send(new WelcomeMail($user));
+
 
         $token = $user->createToken('dark_vault_token')->plainTextToken;
 
