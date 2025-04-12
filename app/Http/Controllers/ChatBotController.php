@@ -13,23 +13,23 @@ class ChatBotController extends Controller
         $validated = $request->validate([
             'message' => 'required|string|max:255',  
         ]);
-
-        $userInput = strtolower(trim($validated['message']));
-
-        if ($this->isGreeting($userInput)) {
-            return response()->json(['reply' => 'Hello! How can I assist you today?']);
-        }
-
+    
+        $userInput = trim($validated['message']);
+    
+        // Debug logging
+        \Log::info('Received request with message: ' . $userInput);
+    
+        // Only check for greeting if it's not a FAQ question
         $faq = $this->getFAQResponse($userInput);
-
         if ($faq) {
             return response()->json(['reply' => $faq]);
         }
-
+    
+        if ($this->isGreeting(strtolower($userInput))) {
+            return response()->json(['reply' => 'Hello! How can I assist you today?']);
+        }
+    
         $openaiResponse = $this->askOpenAI($userInput);
-
-        \Log::info("OpenAI Response: ", ['response' => $openaiResponse]);
-
         return response()->json(['reply' => $openaiResponse]);
     }
 
@@ -51,19 +51,38 @@ class ChatBotController extends Controller
     private function getFAQResponse($message)
     {
         $faq = [
-            'who is creator of dark vault' => 'Enis Abazi, born in April 2005, a software developer working on Dark Vault and other projects.',
-            'can i reset password' => 'Yes, you can go to the login page, reset your password, enter your email, and check your email to reset it.',
-            'can we create groups' => 'Yes, go to the Dashboard -> Groups section to create a group.',
-            'is everything free' => 'No, when certain storage is being used (e.g., storing passwords, emails, etc.), you need to pay. For example, the maximum meter knowledge in the dashboard is 100.',
-            'is everything encrypted' => 'Yes, everything is 100% encrypted and safe.',
+            'Who is creator of Dark Vault?' => 'Enis Abazi, born in April 2005, a software developer working on Dark Vault and other projects.',
+            'Can I reset password?' => 'Yes, you can go to the login page, reset your password, enter your email, and check your email to reset it.',
+            'Can we create groups?' => 'Yes, go to the Dashboard -> Groups section to create a group.',
+            'Is everything free?' => 'No, when certain storage is being used (e.g., storing passwords, emails, etc.), you need to pay. For example, the maximum meter knowledge in the dashboard is 100.',
+            'Is everything encrypted?' => 'Yes, everything is 100% encrypted and safe.'
         ];
-
-        foreach ($faq as $key => $response) {
-            if (strpos($message, strtolower($key)) !== false) {
-                return $response;
+    
+        // Debug logging
+        \Log::info('Received message: ' . $message);
+        
+        // Clean the input message
+        $cleanMessage = trim($message);
+        
+        // Direct match first
+        if (isset($faq[$cleanMessage])) {
+            return $faq[$cleanMessage];
+        }
+        
+        // Case-insensitive match as fallback
+        $lowerMessage = strtolower($cleanMessage);
+        foreach ($faq as $question => $answer) {
+            if (strtolower($question) === $lowerMessage) {
+                return $answer;
             }
         }
 
+        foreach ($faq as $question => $answer) {
+            if (str_contains(strtolower($question), $lowerMessage)) {
+                return $answer;
+            }
+        }
+    
         return null;
     }
 
