@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\GroupUserController;
 use App\Http\Controllers\GroupAnswerController; 
 use App\Http\Controllers\BackgroundColorController;
+use App\Http\Controllers\ChatBotController;
 use App\Models\MessageReactions;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -39,6 +40,8 @@ Route::get('/reactions/grouped', function () {
 Route::get('/password-reset/track/{code}/{email}', [ForgotPasswordControler::class, 'track']);
 Route::get('/password-reset/verify/{code}/{email}', [ForgotPasswordControler::class, 'verify']);
 Route::get('/check-verification-status', [ForgotPasswordControler::class, 'checkVerificationStatus']);
+
+Route::post('/chatbot', [ChatBotController::class , 'respond']);
 
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::delete('/message/{messageId}/react', [PusherController::class, 'deleteReaction']);
