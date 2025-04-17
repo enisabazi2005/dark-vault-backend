@@ -63,7 +63,7 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
 
     Route::post('/mark-as-seen', [PusherController::class, 'markAsSeen']); 
 
-    Route::post('/remove-friend/{request_id}', [FriendReqestsController::class, 'unfriend']);
+    Route::post('/remove-friend/{request_id}', action: [FriendReqestsController::class, 'unfriend']);
     Route::get('/unfriended-users', [FriendReqestsController::class , 'getUnfriendedUsers']);
     Route::post('/block-user/{request_id}', [BlockedUsersController::class, 'blockUsers']);
     Route::get('/blocked-users', [BlockedUsersController::class, 'getBlockedUsers']);

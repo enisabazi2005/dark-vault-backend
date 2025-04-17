@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\FriendRequestAccepted;
+use App\Events\FriendRequestRemoved;
+use App\Events\FriendRequestSent;
 use App\Filament\Resources\FriendRequestsResource;
 use App\Models\BlockedUsers;
 use App\Models\DarkUsers;
@@ -22,7 +25,8 @@ class FriendReqestsController extends Controller
 
     public function sendRequest(Request $request, $request_id)
     {
-        $sender = Auth::user();
+        // $sender = Auth::user();
+        $sender = DarkUsers::find(Auth::user()->id);
         $reciever = DarkUsers::where('request_id', $request_id)->first();
 
 
@@ -55,6 +59,8 @@ class FriendReqestsController extends Controller
             return response()->json(['message' => 'Friend Request already has been sent'], 400);
         }
 
+        event(new FriendRequestSent($sender, $reciever));
+
         FriendRequests::create([
             'dark_user_id' => $reciever->id,
             'request_friend_id' => $sender->request_id,
@@ -67,7 +73,8 @@ class FriendReqestsController extends Controller
 
     public function unfriend($request_id)
     {
-        $user = Auth::user();
+        // $user = Auth::user();
+        $user = DarkUsers::find(Auth::user()->id);
         $friend = DarkUsers::where('request_id', $request_id)->first();
 
         if (!$friend) {
@@ -82,12 +89,16 @@ class FriendReqestsController extends Controller
                 ->where('request_friend_id', $user->request_id);
         })->delete();
 
+        event(new FriendRequestRemoved($user, $friend));
+
+
         return response()->json(['message' => 'Friend removed successfully']);
     }
 
     public function respondRequest(Request $request, $senderRequestId)
     {
-        $receiver = Auth::user();
+        // $receiver = Auth::user();
+        $receiver = DarkUsers::find(Auth::user()->id);
 
         $sender = DarkUsers::where('request_id', $senderRequestId)->first();
 
@@ -115,7 +126,7 @@ class FriendReqestsController extends Controller
                 'friend' => json_encode($receiverFriends),
                 'pending' => null,
             ]);
-
+            event(new FriendRequestAccepted($sender, $receiver));
             if (!$senderFriends) {
                 FriendRequests::create([
                     'dark_user_id' => $sender->id,
@@ -133,6 +144,7 @@ class FriendReqestsController extends Controller
                     'pending' => null,
                 ]);
             }
+
 
             return response()->json(['message' => 'Friend Request Accepted']);
         } elseif ($request->action === 'reject') {
@@ -158,7 +170,8 @@ class FriendReqestsController extends Controller
             ->get(['friend']);
 
         if ($friendRequests->isEmpty()) {
-            return response()->json(['message' => 'No friends found']);
+            // return response()->json(['message' => 'No friends found']);
+            return response()->json([]); // Return empty array instead of message
         }
 
         $friendIds = [];
@@ -185,7 +198,9 @@ class FriendReqestsController extends Controller
             ->get(['request_friend_id']);
 
         if ($pendingRequest->isEmpty()) {
-            return response()->json(['message' => 'No pending requests']);
+            // return response()->json(['message' => 'No pending requests']);
+            return response()->json([]); // Return empty array instead of message
+
         }
 
         $pendingRequestDetails = $pendingRequest->map(function ($request) {
