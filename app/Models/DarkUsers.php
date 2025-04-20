@@ -75,4 +75,5 @@ class DarkUsers extends Model
     {
         return $this->hasMany(FriendRequests::class, 'dark_user_id', 'id');
     }
+    
 }
