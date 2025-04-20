@@ -20,6 +20,7 @@ class NotificationResource extends JsonResource
             'dark_user_id' => $this->dark_user_id,
             'message' => $this->message,
             'is_read' => $this->is_read,
+            'message_id' => $this->message_id,
         ];
     }
 }

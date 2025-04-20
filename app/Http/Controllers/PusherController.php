@@ -63,8 +63,16 @@ class PusherController extends Controller
                             'sender_id' => $sender->id,
                             'sender_name' => $sender->name,
                             'message' => $validated['message'],
+                            'message_id' => $message->id
                         ]);
-                        broadcast(new UnreadMessagesEvent([$notification], $receiver->id));
+
+                        $validNotifications = Notification::where('dark_user_id', $receiver->id)
+                        ->whereHas('message') 
+                        ->get();
+
+                        // broadcast(new UnreadMessagesEvent([$notification], $receiver->id));
+                        broadcast(new UnreadMessagesEvent($validNotifications, $receiver->id));
+
 
                         Log::info(['Notification created:', $notification]);
                     } catch (\Exception $e) {
@@ -76,13 +84,10 @@ class PusherController extends Controller
                 Log::warning('Receiver not found for request_id: ' . $validated['reciever_id']);
             }
 
-
-            // $message = Message::find($message->id);
             $message = Message::with('reactions')->find($message->id);
 
 
             broadcast(new NewMessage($message));
-            // return response()->json(['message' => 'Message sent successfully'], 201);
             return response()->json([
                 'message' => 'Message sent successfully',
                 'data' => [
@@ -94,7 +99,7 @@ class PusherController extends Controller
                     'order' => $message->order,
                     'message_sent_at' => $message->message_sent_at,
                     'seen_at' => $message->seen_at,
-                    'reactions' => $message->reactions, // ✅ Add this
+                    'reactions' => $message->reactions, 
                 ],
             ], 201);
         } catch (\Exception $e) {
