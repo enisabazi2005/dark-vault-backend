@@ -16,11 +16,18 @@ class Notification extends Model
         'message',
         'is_read',
         'message_id',
+        'sender_name',
+        'sender_lastname',
     ];
 
     public function message()
     {
     return $this->belongsTo(Message::class);
     }
+
+    public function sender()
+    {
+    return $this->belongsTo(DarkUsers::class, 'sender_id');
+    }
+
 }
-    

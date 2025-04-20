@@ -62,6 +62,7 @@ class PusherController extends Controller
                             'dark_user_id' => $receiver->id,
                             'sender_id' => $sender->id,
                             'sender_name' => $sender->name,
+                            'sender_lastname' => $sender->lastname,
                             'message' => $validated['message'],
                             'message_id' => $message->id
                         ]);
@@ -69,8 +70,6 @@ class PusherController extends Controller
                         $validNotifications = Notification::where('dark_user_id', $receiver->id)
                         ->whereHas('message') 
                         ->get();
-
-                        // broadcast(new UnreadMessagesEvent([$notification], $receiver->id));
                         broadcast(new UnreadMessagesEvent($validNotifications, $receiver->id));
 
 
@@ -86,7 +85,6 @@ class PusherController extends Controller
 
             $message = Message::with('reactions')->find($message->id);
 
-
             broadcast(new NewMessage($message));
             return response()->json([
                 'message' => 'Message sent successfully',
@@ -100,13 +98,14 @@ class PusherController extends Controller
                     'message_sent_at' => $message->message_sent_at,
                     'seen_at' => $message->seen_at,
                     'reactions' => $message->reactions, 
+                    'sender_name' => $sender?->name,
+                    'sender_lastname' => $sender?->lastname,
                 ],
             ], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
 
     public function getMessages($senderRequestId, $receiverRequestId)
     {
@@ -116,18 +115,7 @@ class PusherController extends Controller
         if (!$sender || !$receiver) {
             return response()->json(['error' => 'One or both users not found'], 404);
         }
-
-        // $messages = Message::where(function ($query) use ($sender, $receiver) {
-        //     $query->where('dark_users_id', $sender->id)
-        //         ->where('reciever_id', $receiver->request_id);
-        // })
-        //     ->orWhere(function ($query) use ($sender, $receiver) {
-        //         $query->where('dark_users_id', $receiver->id)
-        //             ->where('reciever_id', $sender->request_id);
-        //     })
-        //     ->orderBy('order')
-        //     ->get();
-        $messages = Message::with('reactions') // <-- this part
+        $messages = Message::with('reactions') 
             ->where(function ($query) use ($sender, $receiver) {
                 $query->where('sender_id', $sender->request_id)
                     ->where('reciever_id', $receiver->request_id);
@@ -182,10 +170,9 @@ class PusherController extends Controller
             'receiver_id' => 'required|exists:dark_users,request_id',
         ]);
 
-        // Find the latest message between the sender and receiver
         $message = Message::where('sender_id', $validated['sender_id'])
             ->where('reciever_id', $validated['receiver_id'])
-            ->latest('created_at') // Get the most recent message
+            ->latest('created_at') 
             ->first();
 
         if ($message && $message->seen_at === null) {
@@ -205,7 +192,6 @@ class PusherController extends Controller
             'receiver_id' => 'required|exists:dark_users,request_id',
         ]);
 
-        // Fetch the latest message between sender and receiver
         $message = Message::where(function ($query) use ($validated) {
             $query->where('sender_id', $validated['sender_id'])
                 ->where('reciever_id', $validated['receiver_id']);
@@ -218,7 +204,6 @@ class PusherController extends Controller
             ->first();
 
         if ($message) {
-            // ✅ Fire event to update real-time seen status
             broadcast(new MessageSeenEvent($message));
         }
 
@@ -245,7 +230,6 @@ class PusherController extends Controller
             ]
         );
 
-        // Optionally fetch updated message + reactions to broadcast
         $message = Message::with('reactions')->find($messageId);
 
         broadcast(new MessageReacted($message))->toOthers();
@@ -255,7 +239,7 @@ class PusherController extends Controller
     public function getReactions($messageId)
     {
         $reactions = MessageReactions::where('message_id', $messageId)
-            ->with('reactedByUser') // if you want more info about user who reacted
+            ->with('reactedByUser') 
             ->get();
 
         return response()->json([
@@ -265,12 +249,9 @@ class PusherController extends Controller
     }
     public function deleteReaction(Request $request, $messageId)
     {
-        // Get the current authenticated user's ID
         $user = Auth::user();
-        // dd($user);
         $userId = $user->id;
 
-        // Find the reaction for this message and user
         $reaction = MessageReactions::where('message_id', $messageId)
             ->where('reacted_by', $userId)
             ->first();
@@ -279,10 +260,8 @@ class PusherController extends Controller
             return response()->json(['message' => 'Reaction not found'], 404);
         }
     
-        // Delete the reaction
         $reaction->delete();
     
-        // Optionally fetch updated message + reactions to broadcast
         $message = Message::with('reactions')->find($messageId);
     
         broadcast(new MessageReacted($message))->toOthers();

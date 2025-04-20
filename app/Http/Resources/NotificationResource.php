@@ -21,6 +21,8 @@ class NotificationResource extends JsonResource
             'message' => $this->message,
             'is_read' => $this->is_read,
             'message_id' => $this->message_id,
+            'sender_name' => $this->sender_name,
+            'sender_lastname' => $this->sender_lastname,
         ];
     }
 }

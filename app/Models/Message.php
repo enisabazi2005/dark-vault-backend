@@ -24,5 +24,9 @@ class Message extends Model
     {
         return $this->hasMany(MessageReactions::class, 'message_id');
     }
+    public function senderUser()
+    {
+        return $this->belongsTo(DarkUsers::class, 'sender_id', 'request_id');
+    }
 
 }
