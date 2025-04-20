@@ -15,33 +15,35 @@ class MessageSeenEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $message;
+    public $sender_id;
+    public $receiver_id;
+    public $is_typing;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($message)
+    public function __construct($sender_id , $receiver_id, $is_typing)
     {
-        $this->message = $message;
+        $this->sender_id = $sender_id;
+        $this->receiver_id = $receiver_id;
+        $this->is_typing = $is_typing;
     }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn()
     {
-        return new Channel('message-seen.' . $this->message->sender_id);
+        return new Channel('chatroom.' . $this->receiver_id);
     }
-    
+
     public function broadcastWith()
     {
         return [
-            'message_id' => $this->message->id,
-            'seen_at' => $this->message->seen_at,
-            'sender_id' => $this->message->sender_id,
-            'reciever_id' => $this->message->reciever_id,
+            'sender_id' => $this->sender_id,
+            'is_typing' => $this->is_typing,
         ];
+    }
+
+    public function broadcastAs()
+    {
+        return 'user.typing';
     }
 }
