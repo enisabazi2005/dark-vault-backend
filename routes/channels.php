@@ -17,3 +17,6 @@ Broadcast::channel('friend-accept.{requestId}', function ($user, $requestId) {
 Broadcast::channel('friend-remove.{requestId}', function ($user, $requestId) {
     return $user->request_id === $requestId;
 });
+Broadcast::channel('chatroom.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id; // Optional check
+});

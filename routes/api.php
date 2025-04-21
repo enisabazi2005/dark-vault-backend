@@ -42,6 +42,14 @@ Route::get('/password-reset/verify/{code}/{email}', [ForgotPasswordControler::cl
 Route::get('/check-verification-status', [ForgotPasswordControler::class, 'checkVerificationStatus']);
 
 Route::post('/chatbot', [ChatBotController::class , 'respond']);
+Route::post('/typing', function (Request $request) {
+    event(new \App\Events\MessageSeenEvent(
+        $request->sender_id,
+        $request->receiver_id,
+        $request->is_typing
+    ));
+    return response()->json(['status' => 'Typing status sent']);
+});
 
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::delete('/message/{messageId}/react', [PusherController::class, 'deleteReaction']);
