@@ -43,7 +43,7 @@ Route::get('/check-verification-status', [ForgotPasswordControler::class, 'check
 
 Route::post('/chatbot', [ChatBotController::class , 'respond']);
 Route::post('/typing', function (Request $request) {
-    event(new \App\Events\MessageSeenEvent(
+    event(new \App\Events\TypingIndicator(
         $request->sender_id,
         $request->receiver_id,
         $request->is_typing

@@ -18,6 +18,7 @@ class Message extends Model
         'order',
         'message_sent_at',
         'seen_at',
+        'is_seen',
     ];
 
     public function reactions()
