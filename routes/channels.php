@@ -20,3 +20,9 @@ Broadcast::channel('friend-remove.{requestId}', function ($user, $requestId) {
 Broadcast::channel('chatroom.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id; // Optional check
 });
+Broadcast::channel('chat.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
+});
+Broadcast::channel('chat.{receiverId}', function ($user, $receiverId) {
+    return (string) $user->request_id === $receiverId;
+});

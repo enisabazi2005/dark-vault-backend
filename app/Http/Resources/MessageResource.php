@@ -23,6 +23,7 @@ class MessageResource extends JsonResource
             'order' => $this->order,
             'message_sent_at' => $this->message_sent_at,
             'seen_at' => $this->seen_at,
+            'is_seen' => $this->is_seen,
         ];
     }
 }

@@ -68,8 +68,8 @@ class PusherController extends Controller
                         ]);
 
                         $validNotifications = Notification::where('dark_user_id', $receiver->id)
-                        ->whereHas('message') 
-                        ->get();
+                            ->whereHas('message')
+                            ->get();
                         broadcast(new UnreadMessagesEvent($validNotifications, $receiver->id));
 
 
@@ -97,7 +97,7 @@ class PusherController extends Controller
                     'order' => $message->order,
                     'message_sent_at' => $message->message_sent_at,
                     'seen_at' => $message->seen_at,
-                    'reactions' => $message->reactions, 
+                    'reactions' => $message->reactions,
                     'sender_name' => $sender?->name,
                     'sender_lastname' => $sender?->lastname,
                 ],
@@ -115,7 +115,7 @@ class PusherController extends Controller
         if (!$sender || !$receiver) {
             return response()->json(['error' => 'One or both users not found'], 404);
         }
-        $messages = Message::with('reactions') 
+        $messages = Message::with('reactions')
             ->where(function ($query) use ($sender, $receiver) {
                 $query->where('sender_id', $sender->request_id)
                     ->where('reciever_id', $receiver->request_id);
@@ -136,6 +136,8 @@ class PusherController extends Controller
                 'id' => $message->id,
                 'sender_id' => $message->sender_id,
                 'receiver_id' => $message->reciever_id,
+                'reciever_id' => $message->reciever_id,
+                'is_seen' => $message->is_seen,
                 'message' => $message->message,
                 'order' => $message->order,
                 'message_sent_at' => $message->message_sent_at,
@@ -165,53 +167,35 @@ class PusherController extends Controller
     }
     public function markAsSeen(Request $request)
     {
-        $validated = $request->validate([
-            'sender_id' => 'required|exists:dark_users,request_id',
-            'receiver_id' => 'required|exists:dark_users,request_id',
-        ]);
+        $user = Auth::user();
+        $receiverId = $user->request_id;
 
-        $message = Message::where('sender_id', $validated['sender_id'])
-            ->where('reciever_id', $validated['receiver_id'])
-            ->latest('created_at') 
-            ->first();
+        $message = Message::orderBy('created_at', 'desc')  
+            ->first();  
 
-        if ($message && $message->seen_at === null) {
-            $message->seen_at = now();
-            $message->save();
-
-            broadcast(new MessageSeenEvent($message));
+        if (!$message) {
+            return response()->json(['error' => 'No unseen messages found'], 404);
         }
 
-        return response()->json(['message' => 'Message marked as seen']);
-    }
-
-    public function getMessageStatus(Request $request)
-    {
-        $validated = $request->validate([
-            'sender_id' => 'required|exists:dark_users,request_id',
-            'receiver_id' => 'required|exists:dark_users,request_id',
-        ]);
-
-        $message = Message::where(function ($query) use ($validated) {
-            $query->where('sender_id', $validated['sender_id'])
-                ->where('reciever_id', $validated['receiver_id']);
-        })
-            ->orWhere(function ($query) use ($validated) {
-                $query->where('sender_id', $validated['receiver_id'])
-                    ->where('reciever_id', $validated['sender_id']);
-            })
-            ->latest('created_at')
-            ->first();
-
-        if ($message) {
-            broadcast(new MessageSeenEvent($message));
+        if ($message->reciever_id !== $receiverId) {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        return response()->json([
-            'message_id' => $message?->id,
-            'seen_at' => $message?->seen_at,
-        ]);
+        if (!$message->is_seen) {
+            $message->update(['is_seen' => true]);
+
+            broadcast(new MessageSeenEvent($message->sender_id, $message->id));
+
+            return response()->json([
+                'status' => 'seen',
+                'message_id' => $message->id
+            ]);
+        }
+
+        return response()->json(['status' => 'already seen']);
     }
+
+
 
     public function react(Request $request, $messageId)
     {
@@ -239,7 +223,7 @@ class PusherController extends Controller
     public function getReactions($messageId)
     {
         $reactions = MessageReactions::where('message_id', $messageId)
-            ->with('reactedByUser') 
+            ->with('reactedByUser')
             ->get();
 
         return response()->json([
@@ -255,18 +239,17 @@ class PusherController extends Controller
         $reaction = MessageReactions::where('message_id', $messageId)
             ->where('reacted_by', $userId)
             ->first();
-    
+
         if (!$reaction) {
             return response()->json(['message' => 'Reaction not found'], 404);
         }
-    
+
         $reaction->delete();
-    
+
         $message = Message::with('reactions')->find($messageId);
-    
+
         broadcast(new MessageReacted($message))->toOthers();
-    
+
         return response()->json(['message' => 'Reaction removed successfully']);
     }
-
 }
