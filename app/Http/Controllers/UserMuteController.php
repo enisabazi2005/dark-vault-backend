@@ -28,4 +28,18 @@ class UserMuteController extends Controller
 
         return response()->json(['message' => 'User mute status updated successfully']);
     }
+
+    public function getMutedUsers(Request $request)
+    {
+    $validated = $request->validate([
+        'dark_users_id' => 'required|exists:dark_users,id',
+    ]);
+
+    $mutedUsers = UserMute::where('dark_users_id', $validated['dark_users_id'])
+                          ->where('muted', true)
+                          ->pluck('muted_id');
+
+    return response()->json(['muted_users' => $mutedUsers]);
+    }
+
 }
