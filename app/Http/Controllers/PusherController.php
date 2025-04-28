@@ -97,6 +97,7 @@ class PusherController extends Controller
                     'order' => $message->order,
                     'message_sent_at' => $message->message_sent_at,
                     'seen_at' => $message->seen_at,
+                    'is_seen' => false,
                     'reactions' => $message->reactions,
                     'sender_name' => $sender?->name,
                     'sender_lastname' => $sender?->lastname,
