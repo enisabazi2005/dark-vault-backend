@@ -37,5 +37,23 @@ class FriendRequestAccepted implements ShouldBroadcast
     {
         return 'FriendRequestAccepted';
     }
+
+    public function broadcastWith()
+    {
+    return [
+        'sender' => [
+            'request_id' => $this->sender->request_id,
+            'id' => $this->sender->id,
+            'name' => $this->sender->name,
+            'picture' => $this->sender->picture,
+        ],
+        'receiver' => [
+            'request_id' => $this->receiver->request_id,
+            'id' => $this->receiver->id,
+            'name' => $this->receiver->name,
+            'picture' => $this->receiver->picture,
+        ],
+    ];
+}
 }
 
