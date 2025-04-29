@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\MessageReactions;
 use App\Events\MessageReacted;
 use Illuminate\Support\Facades\Auth;
+use App\Events\ProfileViewedEvent;
 
 
 class PusherController extends Controller
@@ -253,4 +254,20 @@ class PusherController extends Controller
 
         return response()->json(['message' => 'Reaction removed successfully']);
     }
+
+    public function profileViewed(Request $request)
+{
+    $request->validate([
+        'viewed_user_id' => 'required|integer|exists:dark_users,id',
+    ]);
+
+    $user = Auth::user();
+    $viewerName = $user->name;
+    $viewerId = $user->id;
+    $viewedUserId = $request->viewed_user_id;
+
+    broadcast(new ProfileViewedEvent($viewerName, $viewerId, $viewedUserId));
+
+    return response()->json(['message' => 'Profile view notification sent']);
+}
 }

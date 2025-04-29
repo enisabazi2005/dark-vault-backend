@@ -63,6 +63,8 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::get('/groups/member', [GroupUserController::class, 'getUserGroups']); // done in native
 
 
+    Route::post('/profile-viewed', [PusherController::class , 'profileViewed']);
+
     Route::post('/groups/create', [GroupUserController::class, 'createGroup']); // done in native
     Route::post('groups/invite', [GroupUserController::class, 'inviteToGroup']); // done in native
     Route::post('group/{groupId}/promote', [GroupUserController::class, 'promoteToSemiAdmin']); // done in native
