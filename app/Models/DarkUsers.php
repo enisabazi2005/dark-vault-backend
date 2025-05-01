@@ -33,6 +33,7 @@ class DarkUsers extends Model
         'offline',
         'away',
         'do_not_disturb',
+        'last_active_at',
     ];
     protected $hidden = [
         'password',
@@ -75,5 +76,19 @@ class DarkUsers extends Model
     {
         return $this->hasMany(FriendRequests::class, 'dark_user_id', 'id');
     }
+
+    protected static function booted()
+{
+    static::updated(function ($user) {
+        \Log::info('User status updated', [
+            'id' => $user->id,
+            'online' => $user->online,
+            'offline' => $user->offline,
+            'away' => $user->away,
+            'dnd' => $user->do_not_disturb,
+        ]);
+    });
+}
+
     
 }

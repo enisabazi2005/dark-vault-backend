@@ -28,6 +28,7 @@ class DarkUserResource extends JsonResource
             'online' => $this->online,
             'offline' => $this->offline,
             'away' => $this->away,
+            'last_active_at' => $this->last_active_at,
         ];
     }
 }
