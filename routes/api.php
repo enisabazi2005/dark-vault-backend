@@ -54,6 +54,7 @@ Route::post('/typing', function (Request $request) {
 Route::post('/setOffline/{id}', [DarkUserController::class , 'makeOffline']);
 
 
+Route::post('/send-signal', [GroupUserController::class, 'sendSignal']);
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::delete('/message/{messageId}/react', [PusherController::class, 'deleteReaction']); // done in native
 

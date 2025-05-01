@@ -10,9 +10,43 @@ use App\Models\GroupAnswer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use App\Events\WebRtcOfferEvent;
 
 class GroupUserController extends Controller
 {
+
+    public function sendSignal(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|string|in:offer,answer,candidate',
+            'from' => 'required',
+            'to' => 'required',
+            'group_id' => 'required|integer'
+        ]);
+        
+        // Create data array to pass to the event
+        $data = [
+            'type' => $request->type,
+            'from' => $request->from,
+            'to' => $request->to,
+            'group_id' => $request->group_id
+        ];
+        
+        // Add the appropriate signal data based on the signal type
+        if ($request->type === 'offer') {
+            $data['offer'] = $request->offer;
+        } else if ($request->type === 'answer') {
+            $data['answer'] = $request->answer;
+        } else if ($request->type === 'candidate') {
+            $data['candidate'] = $request->candidate;
+        }
+        
+        // Broadcast the event with the data
+        broadcast(new WebRtcOfferEvent($data));
+        
+        return response()->json(['success' => true]);
+    }
+    
     public function createGroup(Request $request)
     {
         $request->validate([
