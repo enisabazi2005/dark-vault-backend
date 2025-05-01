@@ -8,3 +8,4 @@ Route::get('/', function () {
 });
 
     Route::get('/group/{code}', [GroupUserController::class, 'viewGroup'])->name('group.show');
+    Route::post('/broadcasting/auth', '\Illuminate\Broadcasting\BroadcastController@authenticate');

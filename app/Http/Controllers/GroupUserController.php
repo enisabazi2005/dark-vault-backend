@@ -15,35 +15,69 @@ use App\Events\WebRtcOfferEvent;
 class GroupUserController extends Controller
 {
 
-    public function sendSignal(Request $request)
+    public function sendSignal(Request $request, $to)
     {
-        $request->validate([
+        $validated = $request->validate([
             'type' => 'required|string|in:offer,answer,candidate',
-            'from' => 'required',
-            'to' => 'required',
-            'group_id' => 'required|integer'
+            'from' => 'required|integer|in:1,16',
+            'to' => 'required|integer|in:1,16',
+            'group_id' => 'required|integer|in:8',
+            'offer' => 'nullable|array',
+            'answer' => 'nullable|array',
+            'candidate' => 'nullable|array'
         ]);
-        
-        // Create data array to pass to the event
+    
+        // Ensure 'to' matches the route parameter
+        if ((string) $request->to !== (string) $to) {
+            Log::warning("Mismatched 'to' parameter: request={$request->to}, route={$to}");
+            return response()->json(['success' => false, 'error' => 'Mismatched recipient'], 400);
+        }
+    
+        // Prevent self-signaling
+        if ((string) $request->from === (string) $request->to) {
+            Log::warning("Self-signaling attempt: from={$request->from}, to={$request->to}");
+            return response()->json(['success' => false, 'error' => 'Cannot send signal to self'], 400);
+        }
+    
         $data = [
             'type' => $request->type,
             'from' => $request->from,
             'to' => $request->to,
-            'group_id' => $request->group_id
+            'group_id' => $request->group_id,
         ];
-        
-        // Add the appropriate signal data based on the signal type
-        if ($request->type === 'offer') {
-            $data['offer'] = $request->offer;
-        } else if ($request->type === 'answer') {
-            $data['answer'] = $request->answer;
-        } else if ($request->type === 'candidate') {
-            $data['candidate'] = $request->candidate;
+    
+        switch ($request->type) {
+            case 'offer':
+                $request->validate([
+                    'offer.type' => 'required|string|in:offer',
+                    'offer.sdp' => 'required|string'
+                ]);
+                $data['offer'] = $request->offer;
+                break;
+    
+            case 'answer':
+                $request->validate([
+                    'answer.type' => 'required|string|in:answer',
+                    'answer.sdp' => 'required|string'
+                ]);
+                $data['answer'] = $request->answer;
+                break;
+    
+            case 'candidate':
+                $request->validate([
+                    'candidate.candidate' => 'required|string',
+                    'candidate.sdpMid' => 'required|string',
+                    'candidate.sdpMLineIndex' => 'required|integer'
+                ]);
+                $data['candidate'] = $request->candidate;
+                break;
         }
-        
-        // Broadcast the event with the data
+    
+        Log::info("Broadcasting signal to private-user.{$to}: ", $data);
+    
+        // You can chain ->toOthers() if needed
         broadcast(new WebRtcOfferEvent($data));
-        
+    
         return response()->json(['success' => true]);
     }
     

@@ -22,7 +22,6 @@ class WebRtcOfferEvent implements ShouldBroadcast
 
     public function __construct($data)
     {
-        // dd($data); // Dump the data to see what is being passed
         $this->type = $data['type'];
         $this->offer = $data['offer'] ?? null;
         $this->answer = $data['answer'] ?? null;

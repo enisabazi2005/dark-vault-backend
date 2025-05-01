@@ -30,7 +30,5 @@ Broadcast::channel('profile-viewed.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
 Broadcast::channel('group.{groupId}', function ($user, $groupId) {
-    // Return true to authorize all users to listen to this channel
-    // In a production app, you'd check if the user belongs to the group
     return true;
 });
