@@ -179,7 +179,7 @@ class FriendReqestsController extends Controller
             $friendIds = array_merge($friendIds, json_decode($request->friend, true)); 
         }
 
-        $friends = DarkUsers::whereIn('id', $friendIds)->get(['id', 'name', 'lastname', 'request_id', 'gender', 'birthdate', 'age', 'picture']);
+        $friends = DarkUsers::whereIn('id', $friendIds)->get(['id', 'name', 'lastname', 'request_id', 'gender', 'birthdate', 'age', 'picture', 'online', 'offline', 'away', 'do_not_disturb']);
 
         return response()->json($friends);
     }

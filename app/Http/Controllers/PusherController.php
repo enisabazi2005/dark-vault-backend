@@ -197,8 +197,6 @@ class PusherController extends Controller
         return response()->json(['status' => 'already seen']);
     }
 
-
-
     public function react(Request $request, $messageId)
     {
         $validated = $request->validate([
@@ -256,7 +254,7 @@ class PusherController extends Controller
     }
 
     public function profileViewed(Request $request)
-{
+    {
     $request->validate([
         'viewed_user_id' => 'required|integer|exists:dark_users,id',
     ]);
@@ -269,5 +267,5 @@ class PusherController extends Controller
     broadcast(new ProfileViewedEvent($viewerName, $viewerId, $viewedUserId));
 
     return response()->json(['message' => 'Profile view notification sent']);
-}
+    }
 }

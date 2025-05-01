@@ -51,8 +51,15 @@ Route::post('/typing', function (Request $request) {
     return response()->json(['status' => 'Typing status sent']);
 }); // done in native
 
+Route::post('/setOffline/{id}', [DarkUserController::class , 'makeOffline']);
+
+
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::delete('/message/{messageId}/react', [PusherController::class, 'deleteReaction']); // done in native
+
+    Route::post('/ping', [DarkUserController::class , 'ping']);
+    // Route::post('/setOffline', [DarkUserController::class , 'makeOffline']);
+    // Route::post('/setOffline', [DarkUserController::class , 'makeOffline']);
 
     Route::get('/background', [BackgroundColorController::class, 'getBackground']); // done in native
     Route::post('/background', [BackgroundColorController::class, 'updateBackground']); // done in native
@@ -100,6 +107,7 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::get('/friend-request/{request_id}/pending', [FriendReqestsController::class, 'getPendingRequest']); // done in native
 
     Route::get('users/{id}', [DarkUserController::class, 'show']); // done in native
+    Route::get('/get-my-user' , [DarkUserController::class, 'getMyUser']);
     
     Route::post('/store-password', [StorePasswordController::class, 'store']); // done in native
     Route::get('/store-passwords', [StorePasswordController::class, 'index']); // done in native

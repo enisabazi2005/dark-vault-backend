@@ -22,6 +22,16 @@ class DarkUserController extends Controller
         return DarkUserResource::collection($darkUsers);
     }
 
+    public function getMyUser() { 
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        return response()->json('Success');
+    }
+
     public function show($id)
     {
         $user = DarkUsers::find($id);
@@ -44,7 +54,7 @@ class DarkUserController extends Controller
     if (!$user) {
         return response()->json(['error' => 'No User found'], 404);
     }
-    if ($request->status === 'online' && $request->status === 'offline') {
+    if (in_array($request->status, ['online', 'offline'])) {
         $unreadMessages = Notification::where('dark_user_id', $user->id)
             ->where('is_read', false)
             ->get();
@@ -56,13 +66,10 @@ class DarkUserController extends Controller
         }
     }
 
-    $user->update([
-        'online' => false,
-        'offline' => false,
-        'away' => false,
-        'do_not_disturb' => false,
-        $request->status => true,
-    ]);
+    $statuses = ['online' => false, 'offline' => false, 'away' => false, 'do_not_disturb' => false];
+    $statuses[$request->status] = true;
+    
+    $user->update($statuses);
 
     return response()->json(['message' => 'Status updated successfully']);
 }
@@ -156,7 +163,7 @@ class DarkUserController extends Controller
     
         // Retrieve friends' details by their IDs
         $friends = DarkUsers::whereIn('id', $friendIds)
-            ->get(['id', 'name', 'lastname', 'request_id', 'gender', 'birthdate', 'age', 'picture']); 
+            ->get(['id', 'name', 'lastname', 'request_id', 'gender', 'birthdate', 'age', 'picture', 'online' , 'offline' , 'away' , 'do_not_disturb']); 
     
         // Return the user details along with their friends
         return response()->json([
@@ -165,6 +172,29 @@ class DarkUserController extends Controller
             'friends_count' => $friends->count(),
             'friends' => $friends
         ]);
+    }
+
+    public function makeOffline(Request $request, $id) { 
+    //    $request->validate([
+    //     'user_id' => 'required|numeric|exists:dark_users,id', 
+    //    ]);
+       
+       $user = DarkUsers::find($id);
+        // $user = DarkUsers::where('id', $id)->get();
+       if(!$user) { 
+        return response()->json('No user found!');
+       }
+
+       $user->update([
+        'offline' => true,
+        'online' => false,
+        'away' => false,
+        'do_not_disturb' => false,
+       ]);
+
+       Log::info('success', ['user_id' => $user->id]);
+
+       return response()->json(['message' => 'User marked as offline'], 200);
     }
     
 }

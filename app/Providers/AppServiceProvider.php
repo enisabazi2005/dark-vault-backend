@@ -26,6 +26,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
 
+        if ($this->app->runningInConsole()) {
+            $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
+            $schedule->command(\App\Console\Commands\MarkInactiveUsersOffline::class)
+                     ->everyMinute()
+                     ->withoutOverlapping();
+        }
 
         $this->app->booted(function () {
             $schedule = app(Schedule::class);
@@ -35,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
         // Listen for the Login event
         Event::listen(Login::class, function ($event) {
             $user = $event->user;
+            \Log::info('Login event triggered for user ID: ' . $event->user->id);
 
             // Set status to online when the user logs in
             $user->update([
