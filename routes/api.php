@@ -78,6 +78,8 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::patch('/groups/edit/{groupId}', [GroupUserController::class, 'editGroup']); // done in native
     Route::get('/groups', [GroupUserController::class, 'getGroups']); // done in native
 
+
+    Route::get('/groups/code/{code}', [GroupUserController::class, 'getGroupByCode']);
     Route::post('/mark-as-seen', [PusherController::class, 'markAsSeen']);  // done in native
 
     Route::post('/remove-friend/{request_id}', action: [FriendReqestsController::class, 'unfriend']); // done in native
