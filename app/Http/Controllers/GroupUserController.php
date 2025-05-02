@@ -10,9 +10,77 @@ use App\Models\GroupAnswer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use App\Events\WebRtcOfferEvent;
 
 class GroupUserController extends Controller
 {
+
+    public function sendSignal(Request $request, $to)
+    {
+        $validated = $request->validate([
+            'type' => 'required|string|in:offer,answer,candidate',
+            'from' => 'required|integer|in:1,16',
+            'to' => 'required|integer|in:1,16',
+            'group_id' => 'required|integer|in:8',
+            'offer' => 'nullable|array',
+            'answer' => 'nullable|array',
+            'candidate' => 'nullable|array'
+        ]);
+    
+        // Ensure 'to' matches the route parameter
+        if ((string) $request->to !== (string) $to) {
+            Log::warning("Mismatched 'to' parameter: request={$request->to}, route={$to}");
+            return response()->json(['success' => false, 'error' => 'Mismatched recipient'], 400);
+        }
+    
+        // Prevent self-signaling
+        if ((string) $request->from === (string) $request->to) {
+            Log::warning("Self-signaling attempt: from={$request->from}, to={$request->to}");
+            return response()->json(['success' => false, 'error' => 'Cannot send signal to self'], 400);
+        }
+    
+        $data = [
+            'type' => $request->type,
+            'from' => $request->from,
+            'to' => $request->to,
+            'group_id' => $request->group_id,
+        ];
+    
+        switch ($request->type) {
+            case 'offer':
+                $request->validate([
+                    'offer.type' => 'required|string|in:offer',
+                    'offer.sdp' => 'required|string'
+                ]);
+                $data['offer'] = $request->offer;
+                break;
+    
+            case 'answer':
+                $request->validate([
+                    'answer.type' => 'required|string|in:answer',
+                    'answer.sdp' => 'required|string'
+                ]);
+                $data['answer'] = $request->answer;
+                break;
+    
+            case 'candidate':
+                $request->validate([
+                    'candidate.candidate' => 'required|string',
+                    'candidate.sdpMid' => 'required|string',
+                    'candidate.sdpMLineIndex' => 'required|integer'
+                ]);
+                $data['candidate'] = $request->candidate;
+                break;
+        }
+    
+        Log::info("Broadcasting signal to private-user.{$to}: ", $data);
+    
+        // You can chain ->toOthers() if needed
+        broadcast(new WebRtcOfferEvent($data));
+    
+        return response()->json(['success' => true]);
+    }
+
     public function createGroup(Request $request)
     {
         $request->validate([
@@ -32,7 +100,7 @@ class GroupUserController extends Controller
             $code = rand(100000, 999999);
         }
 
-        $groupLink = url("/group/{$code}");
+        $groupLink = $code;
 
         $group = GroupUser::create([
             'dark_user_id' => $user->id,
@@ -303,4 +371,31 @@ class GroupUserController extends Controller
             'authId' => auth()->id()
         ]);
     }
+    public function getGroupByCode($code)
+{
+    $group = GroupUser::where('code', $code)->first();
+
+    if (!$group) {
+        return response()->json(['message' => 'Group not found'], 404);
+    }
+
+    // Load admin and semi-admin user info
+    $admin = DarkUsers::find($group->admin_id);
+    $semiAdmin = $group->semi_admin_id ? DarkUsers::find($group->semi_admin_id) : null;
+
+    // Get invited users
+    $invitedUsers = DarkUsers::whereIn('id', $group->users_invited ?? [])->get();
+
+    // Get users in group
+    $inGroupUsers = DarkUsers::whereIn('id', $group->users_in_group ?? [])->get();
+
+    return response()->json([
+        'group' => $group,
+        'admin' => $admin,
+        'semi_admin' => $semiAdmin,
+        'users_invited' => $invitedUsers,
+        'users_in_group' => $inGroupUsers,
+    ]);
+}
+
 }
