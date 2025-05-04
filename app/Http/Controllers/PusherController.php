@@ -179,9 +179,9 @@ class PusherController extends Controller
             return response()->json(['error' => 'No unseen messages found'], 404);
         }
 
-        if ($message->reciever_id !== $receiverId) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        // if ($message->reciever_id !== $receiverId) {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
 
         if (!$message->is_seen) {
             $message->update(['is_seen' => true]);
