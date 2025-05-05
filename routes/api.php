@@ -6,6 +6,7 @@ use App\Http\Controllers\DarkUserController;
 use App\Http\Controllers\ForgotPasswordControler;
 use App\Http\Controllers\FriendReqestsController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProVersionModelController;
 use App\Http\Controllers\PusherController;
 use App\Http\Controllers\StoreEmailController;
 use App\Http\Controllers\StoreNotesController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\GroupUserController;
 use App\Http\Controllers\GroupAnswerController; 
 use App\Http\Controllers\BackgroundColorController;
 use App\Http\Controllers\ChatBotController;
+use App\Http\Controllers\WeeklyOnlineTimesController;
 use App\Models\MessageReactions;
 
 Route::post('/register', [AuthController::class, 'register']); // done in native
@@ -52,6 +54,7 @@ Route::post('/typing', function (Request $request) {
 }); // done in native
 
 Route::post('/setOffline/{id}', [DarkUserController::class , 'makeOffline']);
+// Route::get('/setOffline/{id}', [DarkUserController::class , 'makeOffline']);
 
 
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
@@ -60,6 +63,10 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::post('/ping', [DarkUserController::class , 'ping']);
     // Route::post('/setOffline', [DarkUserController::class , 'makeOffline']);
     // Route::post('/setOffline', [DarkUserController::class , 'makeOffline']);
+    Route::get('/online-times', [WeeklyOnlineTimesController::class , 'getWeeklyOnlineTimes']);
+
+    Route::post('/pro/purcashe', [ProVersionModelController::class , 'purcashe']);
+    Route::get('/pro/latest', [ProVersionModelController::class , 'latest']);
 
     Route::get('/background', [BackgroundColorController::class, 'getBackground']); // done in native
     Route::post('/background', [BackgroundColorController::class, 'updateBackground']); // done in native
