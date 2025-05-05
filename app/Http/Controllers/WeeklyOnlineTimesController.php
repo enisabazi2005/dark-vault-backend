@@ -11,6 +11,8 @@ class WeeklyOnlineTimesController extends Controller
     public function getWeeklyOnlineTimes() { 
         $user = Auth::user();
 
+        if(!$user->has_pro) return response()->json(['message' => 'Pro Version is required , please contact support team'], 403);
+
         $daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
         $data = WeeklyOnlineTimes::where('dark_users_id', $user->id)

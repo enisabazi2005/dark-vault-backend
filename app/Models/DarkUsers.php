@@ -36,6 +36,7 @@ class DarkUsers extends Model
         'do_not_disturb',
         'last_active_at',
         'has_pro',
+        'MAX_STORAGE',
     ];
     protected $hidden = [
         'password',

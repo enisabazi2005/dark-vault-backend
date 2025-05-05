@@ -18,7 +18,11 @@ class ProVersionModelController extends Controller
             return response()->json(['message' => 'No need again to purcashe'], 400);
         }
 
-        $user->update(['has_pro' => true]);
+        $user->update([
+            'has_pro' => true,
+            'MAX_STORAGE' => 50,
+        
+        ]);
 
         $pro = ProVersionModel::create([
             'dark_users_id' => $user->id,

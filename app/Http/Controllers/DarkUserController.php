@@ -71,30 +71,30 @@ class DarkUserController extends Controller
     $statuses = ['online' => false, 'offline' => false, 'away' => false, 'do_not_disturb' => false];
     $statuses[$request->status] = true;
 
-    if($request->status === 'online') { 
-        $user->update(['last_active_at' => Carbon::now()]);
-    } else if($request->status === 'offline') { 
-        if($user->last_active_at) { 
-            $now = Carbon::now();
-
-            $lastActive = Carbon::parse($user->last_active_at); 
-
-            $minutesOnline = $lastActive->diffInMinutes($now);
-
-            $day = $now->format('l');
-
-            $record = WeeklyOnlineTimes::create([
-                'dark_users_id' => $user->id,
-                'day' => $day,
-                // 'minutes_online' => $minutesOnline,
-            ]);
-
-            $record->minutes_online += $minutesOnline;
-
-            $record->save();
-
+    if($user->has_pro) { 
+        if($request->status === 'online') { 
+            $user->update(['last_active_at' => Carbon::now()]);
+        } else if($request->status === 'offline') { 
+            if($user->last_active_at) { 
+                $now = Carbon::now();
+    
+                $lastActive = Carbon::parse($user->last_active_at); 
+    
+                $minutesOnline = $lastActive->diffInMinutes($now);
+    
+                $day = $now->format('l');
+    
+                $record = WeeklyOnlineTimes::create([
+                    'dark_users_id' => $user->id,
+                    'day' => $day,
+                ]);
+    
+                $record->minutes_online += $minutesOnline;
+    
+                $record->save();
+            }
         }
-    }
+    };
     
     $user->update($statuses);
 
@@ -216,26 +216,23 @@ class DarkUserController extends Controller
             'do_not_disturb' => false,
         ]);
     
-        if ($user->last_active_at) {
-            $now = Carbon::now();
-            $lastActive = Carbon::parse($user->last_active_at);
-            $minutesOnline = $lastActive->diffInMinutes($now);
-            $day = $now->format('l');
+        if($user->has_pro) { 
+            if ($user->last_active_at) {
+                $now = Carbon::now();
+                $lastActive = Carbon::parse($user->last_active_at);
+                $minutesOnline = $lastActive->diffInMinutes($now);
+                $day = $now->format('l');
     
-            // $week = now()->weekOfYear;
-            // $year = now()->year;
-    
-            $record = WeeklyOnlineTimes::create([
-                'dark_users_id' => $user->id,
-                'day' => $day,
-                // 'week' => $week,
-                // 'year' => $year,
-            ]);
-    
-            $record->minutes_online += $minutesOnline;
-            $record->save();
-            
-            Log::info(['message saved' => $record]);
+                $record = WeeklyOnlineTimes::create([
+                    'dark_users_id' => $user->id,
+                    'day' => $day,
+                ]);
+        
+                $record->minutes_online += $minutesOnline;
+                $record->save();
+                
+                Log::info(['message saved' => $record]);
+            }
         }
     
         Log::info('User marked offline', ['user_id' => $user->id]);
