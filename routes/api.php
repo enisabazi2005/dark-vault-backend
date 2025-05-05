@@ -6,6 +6,7 @@ use App\Http\Controllers\DarkUserController;
 use App\Http\Controllers\ForgotPasswordControler;
 use App\Http\Controllers\FriendReqestsController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProVersionModelController;
 use App\Http\Controllers\PusherController;
 use App\Http\Controllers\StoreEmailController;
 use App\Http\Controllers\StoreNotesController;
@@ -60,6 +61,9 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::post('/ping', [DarkUserController::class , 'ping']);
     // Route::post('/setOffline', [DarkUserController::class , 'makeOffline']);
     // Route::post('/setOffline', [DarkUserController::class , 'makeOffline']);
+
+    Route::post('/pro/purcashe', [ProVersionModelController::class , 'purcashe']);
+    Route::get('/pro/latest', [ProVersionModelController::class , 'latest']);
 
     Route::get('/background', [BackgroundColorController::class, 'getBackground']); // done in native
     Route::post('/background', [BackgroundColorController::class, 'updateBackground']); // done in native
