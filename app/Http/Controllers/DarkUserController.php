@@ -7,6 +7,8 @@ use App\Http\Resources\DarkUserResource;
 use App\Models\DarkUsers;
 use App\Models\FriendRequests;
 use App\Models\Notification;
+use App\Models\WeeklyOnlineTimes;
+use Carbon\Carbon;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -68,6 +70,31 @@ class DarkUserController extends Controller
 
     $statuses = ['online' => false, 'offline' => false, 'away' => false, 'do_not_disturb' => false];
     $statuses[$request->status] = true;
+
+    if($request->status === 'online') { 
+        $user->update(['last_active_at' => Carbon::now()]);
+    } else if($request->status === 'offline') { 
+        if($user->last_active_at) { 
+            $now = Carbon::now();
+
+            $lastActive = Carbon::parse($user->last_active_at); 
+
+            $minutesOnline = $lastActive->diffInMinutes($now);
+
+            $day = $now->format('l');
+
+            $record = WeeklyOnlineTimes::create([
+                'dark_users_id' => $user->id,
+                'day' => $day,
+                // 'minutes_online' => $minutesOnline,
+            ]);
+
+            $record->minutes_online += $minutesOnline;
+
+            $record->save();
+
+        }
+    }
     
     $user->update($statuses);
 
@@ -174,27 +201,46 @@ class DarkUserController extends Controller
         ]);
     }
 
-    public function makeOffline(Request $request, $id) { 
-    //    $request->validate([
-    //     'user_id' => 'required|numeric|exists:dark_users,id', 
-    //    ]);
-       
-       $user = DarkUsers::find($id);
-        // $user = DarkUsers::where('id', $id)->get();
-       if(!$user) { 
-        return response()->json('No user found!');
-       }
-
-       $user->update([
-        'offline' => true,
-        'online' => false,
-        'away' => false,
-        'do_not_disturb' => false,
-       ]);
-
-       Log::info('success', ['user_id' => $user->id]);
-
-       return response()->json(['message' => 'User marked as offline'], 200);
+    public function makeOffline($id)
+    {
+        $user = DarkUsers::find($id);
+    
+        if (!$user) {
+            return response()->json('No user found!');
+        }
+    
+        $user->update([
+            'offline' => true,
+            'online' => false,
+            'away' => false,
+            'do_not_disturb' => false,
+        ]);
+    
+        if ($user->last_active_at) {
+            $now = Carbon::now();
+            $lastActive = Carbon::parse($user->last_active_at);
+            $minutesOnline = $lastActive->diffInMinutes($now);
+            $day = $now->format('l');
+    
+            // $week = now()->weekOfYear;
+            // $year = now()->year;
+    
+            $record = WeeklyOnlineTimes::create([
+                'dark_users_id' => $user->id,
+                'day' => $day,
+                // 'week' => $week,
+                // 'year' => $year,
+            ]);
+    
+            $record->minutes_online += $minutesOnline;
+            $record->save();
+            
+            Log::info(['message saved' => $record]);
+        }
+    
+        Log::info('User marked offline', ['user_id' => $user->id]);
+    
+        return response()->json(['message' => 'User marked as offline'], 200);
     }
     
 }
