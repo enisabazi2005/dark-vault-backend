@@ -65,6 +65,8 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     // Route::post('/setOffline', [DarkUserController::class , 'makeOffline']);
     Route::get('/online-times', [WeeklyOnlineTimesController::class , 'getWeeklyOnlineTimes']);
 
+    Route::post('/view-tutorial', [DarkUserController::class , 'updateView']);
+
     Route::post('/pro/purcashe', [ProVersionModelController::class , 'purcashe']);
     Route::get('/pro/latest', [ProVersionModelController::class , 'latest']);
 
