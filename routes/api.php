@@ -22,6 +22,7 @@ use App\Http\Controllers\GroupUserController;
 use App\Http\Controllers\GroupAnswerController; 
 use App\Http\Controllers\BackgroundColorController;
 use App\Http\Controllers\ChatBotController;
+use App\Http\Controllers\PaypalController;
 use App\Http\Controllers\WeeklyOnlineTimesController;
 use App\Models\MessageReactions;
 
@@ -66,6 +67,8 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::get('/online-times', [WeeklyOnlineTimesController::class , 'getWeeklyOnlineTimes']);
 
     Route::post('/view-tutorial', [DarkUserController::class , 'updateView']);
+
+    Route::post('/verify-paypal', [PaypalController::class , 'verify']);
 
     Route::post('/pro/purcashe', [ProVersionModelController::class , 'purcashe']);
     Route::get('/pro/latest', [ProVersionModelController::class , 'latest']);
