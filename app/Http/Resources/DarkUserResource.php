@@ -31,6 +31,7 @@ class DarkUserResource extends JsonResource
             'last_active_at' => $this->last_active_at,
             'has_pro' => $this->has_pro,
             'MAX_STORAGE' => $this->MAX_STORAGE,
+            'view' => $this->view,
         ];
     }
 }

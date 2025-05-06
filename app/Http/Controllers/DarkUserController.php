@@ -239,5 +239,18 @@ class DarkUserController extends Controller
     
         return response()->json(['message' => 'User marked as offline'], 200);
     }
+
+    public function updateView()
+    {
+        $user = Auth::user();
+
+        if($user->view) { 
+            return response()->json(['message' => 'Cant view again'], 400);
+        }
+
+        $user->update(['view' => true]);
+
+        return response()->json(['message' => 'User updated successfully $user->view']);
+    }
     
 }
