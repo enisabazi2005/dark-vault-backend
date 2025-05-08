@@ -170,8 +170,7 @@ class FriendReqestsController extends Controller
             ->get(['friend']);
 
         if ($friendRequests->isEmpty()) {
-            // return response()->json(['message' => 'No friends found']);
-            return response()->json([]); // Return empty array instead of message
+            return response()->json([]); 
         }
 
         $friendIds = [];
@@ -179,7 +178,7 @@ class FriendReqestsController extends Controller
             $friendIds = array_merge($friendIds, json_decode($request->friend, true)); 
         }
 
-        $friends = DarkUsers::whereIn('id', $friendIds)->get(['id', 'name', 'lastname', 'request_id', 'gender', 'birthdate', 'age', 'picture', 'online', 'offline', 'away', 'do_not_disturb']);
+        $friends = DarkUsers::whereIn('id', $friendIds)->get();
 
         return response()->json($friends);
     }
@@ -198,8 +197,7 @@ class FriendReqestsController extends Controller
             ->get(['request_friend_id']);
 
         if ($pendingRequest->isEmpty()) {
-            // return response()->json(['message' => 'No pending requests']);
-            return response()->json([]); // Return empty array instead of message
+            return response()->json([]); 
 
         }
 
