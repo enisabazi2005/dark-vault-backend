@@ -25,6 +25,7 @@ use App\Http\Controllers\ChatBotController;
 use App\Http\Controllers\PaypalController;
 use App\Http\Controllers\WeeklyOnlineTimesController;
 use App\Models\MessageReactions;
+use App\Http\Controllers\CustomBackgroundController;
 
 Route::post('/register', [AuthController::class, 'register']); // done in native
 Route::post('/login', [AuthController::class, 'login']); // done in native
@@ -59,6 +60,9 @@ Route::post('/setOffline/{id}', [DarkUserController::class , 'makeOffline']);
 
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::delete('/message/{messageId}/react', [PusherController::class, 'deleteReaction']); // done in native
+
+    Route::get('/custom-background', [CustomBackgroundController::class, 'show']);
+    Route::post('/custom-background', [CustomBackgroundController::class, 'store']);
     
     Route::post('/ping', [DarkUserController::class , 'ping']);
     Route::get('/download-profile-picture/{path}', [DarkUserController::class, 'downloadPng'])->where('path', '.*');     
