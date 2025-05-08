@@ -55,15 +55,14 @@ Route::post('/typing', function (Request $request) {
 }); // done in native
 
 Route::post('/setOffline/{id}', [DarkUserController::class , 'makeOffline']);
-// Route::get('/setOffline/{id}', [DarkUserController::class , 'makeOffline']);
 
 
 Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::delete('/message/{messageId}/react', [PusherController::class, 'deleteReaction']); // done in native
-
+    
     Route::post('/ping', [DarkUserController::class , 'ping']);
-    // Route::post('/setOffline', [DarkUserController::class , 'makeOffline']);
-    // Route::post('/setOffline', [DarkUserController::class , 'makeOffline']);
+    Route::get('/download-profile-picture/{path}', [DarkUserController::class, 'downloadPng'])->where('path', '.*');     
+
     Route::get('/online-times', [WeeklyOnlineTimesController::class , 'getWeeklyOnlineTimes']);
 
     Route::post('/view-tutorial', [DarkUserController::class , 'updateView']);

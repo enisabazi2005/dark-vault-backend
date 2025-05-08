@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class DarkUserController extends Controller
 {
@@ -159,19 +160,16 @@ class DarkUserController extends Controller
         ]);
     }
     public function getUserWithFriends($request_id) { 
-        // Retrieve the user by their request_id
         $user = DarkUsers::where('request_id', $request_id)->first();
     
         if (!$user) { 
             return response()->json(['message' => 'User not found'], 400);
         }
     
-        // Retrieve accepted friends for the user
         $friendRequests = FriendRequests::where('dark_user_id', $user->id)
             ->where('is_accepted', true)
             ->get(['friend']);
     
-        // Check if the user has any friends
         if ($friendRequests->isEmpty()) { 
             return response()->json([
                 'name' => $user->name,
@@ -182,17 +180,13 @@ class DarkUserController extends Controller
             ]);
         }
     
-        // Decode the 'friend' field to get an array of friend IDs
         $friendIds = [];
         foreach ($friendRequests as $request) {
             $friendIds = array_merge($friendIds, json_decode($request->friend, true)); // Decoding the JSON
         }
     
-        // Retrieve friends' details by their IDs
-        $friends = DarkUsers::whereIn('id', $friendIds)
-            ->get(['id', 'name', 'lastname', 'request_id', 'gender', 'birthdate', 'age', 'picture', 'online' , 'offline' , 'away' , 'do_not_disturb']); 
-    
-        // Return the user details along with their friends
+        $friends = DarkUsers::whereIn('id', $friendIds)->get();
+
         return response()->json([
             'name' => $user->name,
             'lastname' => $user->lastname,
@@ -253,4 +247,14 @@ class DarkUserController extends Controller
         return response()->json(['message' => 'User updated successfully $user->view']);
     }
     
+    public function downloadPng($path)
+    {
+        $fullPath = storage_path('app/public/' . $path);
+        
+        if (!file_exists($fullPath)) {
+            return response()->json(['error' => 'File not found at: ' . $fullPath], 404);
+        }
+        
+        return response()->download($fullPath, basename($path));
+    }
 }
