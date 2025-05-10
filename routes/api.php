@@ -95,9 +95,12 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::get('/groups', [GroupUserController::class, 'getGroups']); // done in native
 
 
+
     Route::post('/send-message-group/{groupId}', [GroupMessageController::class , 'sendMessage']);
     Route::get('/get-groups-messages/{groupId}', [GroupMessageController::class , 'getMessagess']);
     Route::get('/get-users-in-group/{groupId}', [GroupMessageController::class, 'getUsersInGroup']);
+    Route::get('/get-single-message/{messageGroupId}', [GroupMessageController::class, 'getSingleMessage']);
+    Route::post('/report-group-message', [GroupMessageController::class, 'reportGroupMessage']);
 
 
     Route::get('/groups/code/{code}', [GroupUserController::class, 'getGroupByCode']);
