@@ -29,3 +29,6 @@ Broadcast::channel('chat.{receiverId}', function ($user, $receiverId) {
 Broadcast::channel('profile-viewed.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
+Broadcast::channel('group.{groupId}', function ($user, $groupId) {
+    return true;
+});

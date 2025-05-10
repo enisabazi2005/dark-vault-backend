@@ -29,4 +29,9 @@ class GroupUser extends Model
     {
         return $this->belongsTo(DarkUsers::class, 'dark_user_id');
     }
+
+    public function messages()
+    {
+        return $this->hasMany(GroupMessage::class , 'group_id');
+    }
 }
