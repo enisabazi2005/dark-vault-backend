@@ -26,6 +26,7 @@ use App\Http\Controllers\PaypalController;
 use App\Http\Controllers\WeeklyOnlineTimesController;
 use App\Models\MessageReactions;
 use App\Http\Controllers\CustomBackgroundController;
+use App\Http\Controllers\GroupMessageController;
 
 Route::post('/register', [AuthController::class, 'register']); // done in native
 Route::post('/login', [AuthController::class, 'login']); // done in native
@@ -92,6 +93,11 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::post('group/{groupId}/promote', [GroupUserController::class, 'promoteToSemiAdmin']); // done in native
     Route::patch('/groups/edit/{groupId}', [GroupUserController::class, 'editGroup']); // done in native
     Route::get('/groups', [GroupUserController::class, 'getGroups']); // done in native
+
+
+    Route::post('/send-message-group/{groupId}', [GroupMessageController::class , 'sendMessage']);
+    Route::get('/get-groups-messages/{groupId}', [GroupMessageController::class , 'getMessagess']);
+    Route::get('/get-users-in-group/{groupId}', [GroupMessageController::class, 'getUsersInGroup']);
 
 
     Route::get('/groups/code/{code}', [GroupUserController::class, 'getGroupByCode']);
