@@ -104,6 +104,7 @@ class GroupUserController extends Controller
 
         $group = GroupUser::create([
             'dark_user_id' => $user->id,
+            'owner_email' => $user->email,
             'title' => $request->title,
             'code' => $code,
             'users_in_group' => [$user->id],
