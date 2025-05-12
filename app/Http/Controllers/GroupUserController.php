@@ -373,30 +373,72 @@ class GroupUserController extends Controller
         ]);
     }
     public function getGroupByCode($code)
-{
-    $group = GroupUser::where('code', $code)->first();
+    {
+        $group = GroupUser::where('code', $code)->first();
 
-    if (!$group) {
-        return response()->json(['message' => 'Group not found'], 404);
+        if (!$group) {
+            return response()->json(['message' => 'Group not found'], 404);
+        }
+
+        $admin = DarkUsers::find($group->admin_id);
+        $semiAdmin = $group->semi_admin_id ? DarkUsers::find($group->semi_admin_id) : null;
+
+        $invitedUsers = DarkUsers::whereIn('id', $group->users_invited ?? [])->get();
+
+        $inGroupUsers = DarkUsers::whereIn('id', $group->users_in_group ?? [])->get();
+
+        return response()->json([
+            'group' => $group,
+            'admin' => $admin,
+            'semi_admin' => $semiAdmin,
+            'users_invited' => $invitedUsers,
+            'users_in_group' => $inGroupUsers,
+        ]);
     }
 
-    // Load admin and semi-admin user info
-    $admin = DarkUsers::find($group->admin_id);
-    $semiAdmin = $group->semi_admin_id ? DarkUsers::find($group->semi_admin_id) : null;
+    public function leaveGroup($groupId)
+    {
+        $user = Auth::user()->id;
 
-    // Get invited users
-    $invitedUsers = DarkUsers::whereIn('id', $group->users_invited ?? [])->get();
+        $group = GroupUser::where('id', $groupId)->first();
 
-    // Get users in group
-    $inGroupUsers = DarkUsers::whereIn('id', $group->users_in_group ?? [])->get();
+        if(!$group) {
+            return response()->json(['message' => 'No group has been found to leave the group...'], 400);
+        }
 
-    return response()->json([
-        'group' => $group,
-        'admin' => $admin,
-        'semi_admin' => $semiAdmin,
-        'users_invited' => $invitedUsers,
-        'users_in_group' => $inGroupUsers,
-    ]);
-}
+        $findUserInGroup = GroupUser::whereJsonContains('users_in_group', $user)->first();
 
+        if(!$findUserInGroup) { 
+            return response()->json(['message' => 'You are not member of this group'], 400);
+        }
+
+        $updatedUsers = array_values(array_filter($group->users_in_group, function ($id) use ($user) {
+            return $id != $user;
+        }));
+    
+        $group->users_in_group = $updatedUsers;
+        $group->save();
+    
+        return response()->json(['message' => 'You have left the group successfully.']);
+    }
+
+    public function deleteGroup($groupId)
+    {
+        $user = Auth::user()->id;
+        if(!$user) { 
+            return response()->json(['message' => 'No user has been found'], 403);
+        }
+
+        $group = GroupUser::where('id', $groupId)
+            ->where('admin_id', $user)
+            ->first();
+
+        if(!$group) { 
+            return response()->json(['message' => 'Failed at getting group'], 400);
+        }
+
+        $group->delete();
+
+        return response()->json(['message' => 'Group removed successfully'], 201);
+    }
 }

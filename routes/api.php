@@ -93,7 +93,8 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::post('group/{groupId}/promote', [GroupUserController::class, 'promoteToSemiAdmin']); // done in native
     Route::patch('/groups/edit/{groupId}', [GroupUserController::class, 'editGroup']); // done in native
     Route::get('/groups', [GroupUserController::class, 'getGroups']); // done in native
-
+    Route::post('/groups/leave/{groupId}', [GroupUserController::class , 'leaveGroup']);
+    Route::post('/groups/delete/{groupId}', [GroupUserController::class, 'deleteGroup']);
 
 
     Route::post('/send-message-group/{groupId}', [GroupMessageController::class , 'sendMessage']);
