@@ -11,7 +11,7 @@ class GroupUser extends Model
     use HasFactory;
 
     protected $fillable = [
-        'dark_user_id', 'title',, 'owner_email', 'code', 'users_in_group', 'users_invited', 'users_answered', 'admin_id', 'semi_admin_id', 'group_link'
+        'dark_user_id', 'title', 'owner_email', 'code', 'users_in_group', 'users_invited', 'users_answered', 'admin_id', 'semi_admin_id', 'group_link'
     ];
 
     protected $casts = [

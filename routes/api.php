@@ -28,6 +28,7 @@ use App\Models\MessageReactions;
 use App\Http\Controllers\CustomBackgroundController;
 use App\Http\Controllers\GroupMessageController;
 
+
 Route::post('/register', [AuthController::class, 'register']); // done in native
 Route::post('/login', [AuthController::class, 'login']); // done in native
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']); // done in native
