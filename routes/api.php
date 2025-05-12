@@ -103,6 +103,7 @@ Route::middleware(['auth:sanctum', Authenticate::class])->group(function () {
     Route::get('/get-users-in-group/{groupId}', [GroupMessageController::class, 'getUsersInGroup']);
     Route::get('/get-single-message/{messageGroupId}', [GroupMessageController::class, 'getSingleMessage']);
     Route::post('/report-group-message', [GroupMessageController::class, 'reportGroupMessage']);
+    Route::post('/delete-group-message/{groupId}', [GroupMessageController::class , 'deleteGroupMessage']);
 
 
     Route::get('/groups/code/{code}', [GroupUserController::class, 'getGroupByCode']);

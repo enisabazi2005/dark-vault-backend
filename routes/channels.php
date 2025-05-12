@@ -32,3 +32,6 @@ Broadcast::channel('profile-viewed.{userId}', function ($user, $userId) {
 Broadcast::channel('group.{groupId}', function ($user, $groupId) {
     return true;
 });
+Broadcast::channel('group.{groupId}', function ($user, $groupId) {
+    return true;
+});

@@ -11,6 +11,8 @@ use PhpParser\Node\Stmt\GroupUse;
 use App\Events\GroupMessageEvent;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ReportMessageMail;
+use App\Events\GroupMessageDeleted;
+
 class GroupMessageController extends Controller
 {
     public function sendMessage(Request $request, $groupId)
@@ -103,6 +105,33 @@ class GroupMessageController extends Controller
         return response()->json($groupMessage);
     }
 
+    public function deleteGroupMessage(Request $request,$groupId)
+    {
+        $user = Auth::user();
+        $messageId = $request->input('message_id');
+
+        $message = GroupMessage::find($messageId);
+        if(!$message) { 
+            return response()->json(['message' => 'No message has been found'], 400);
+        }
+
+        $group = GroupUser::where('id', $message->group_id)->first();
+        if(!$group) { 
+            return response()->json(['message' => 'No group has been found'], 400);
+        }
+
+        if($group->admin_id !== $user->id) { 
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $message->delete();
+
+        broadcast(new GroupMessageDeleted($groupId, $messageId));
+
+
+        return response()->json(['message' => 'Successfully deleted message'], 200);
+    }
+
     public function reportGroupMessage(Request $request)
     {
         $user = Auth::user();
@@ -145,7 +174,7 @@ class GroupMessageController extends Controller
                 $suspect,
                 $message->message,
                 $user->email,
-                $reason // ✅ new param
+                $reason 
             )
         );
     
