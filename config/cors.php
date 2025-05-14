@@ -15,13 +15,11 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+ 'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    
+    'allowed_methods' => ['*'], // Allow all methods like GET, POST, etc.
 
-    'allowed_methods' => ['*'],
-
-    // 'allowed_origins' => ['*'],
     'allowed_origins' => ['https://dark-vault-frontend.vercel.app'],
-
 
     'allowed_origins_patterns' => [],
 
