@@ -19,8 +19,8 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
-    // 'allowed_origins' => ['http://192.168.1.19:3000'],
+    // 'allowed_origins' => ['*'],
+    'allowed_origins' => ['https://dark-vault-frontend.vercel.app'],
 
 
     'allowed_origins_patterns' => [],
