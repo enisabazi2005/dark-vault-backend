@@ -32,6 +32,8 @@ use App\Http\Controllers\GroupMessageController;
 Route::post('/register', [AuthController::class, 'register']); // done in native
 Route::post('/login', [AuthController::class, 'login']); // done in native
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']); // done in native
+Route::post('/google-auth', [AuthController::class, 'googleAuth']);
+
 
 Route::apiResource('/friend-requests', FriendRequests::class); // done in native
 Route::get('/users', [DarkUserController::class, 'index']); // done in native
