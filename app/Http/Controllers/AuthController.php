@@ -133,7 +133,7 @@ class AuthController extends Controller {
                     'gender' => 'male',
                     'birthdate' => now()->subYears(18),
                     'age' => 18,
-                    'picture' => $payload['picture'] ?? null,
+                    'picture' => null,
                     'request_id' => strtoupper(Str::random(8)),
                 ]);
 
