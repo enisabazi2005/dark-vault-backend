@@ -19,7 +19,7 @@ return [
     
     'allowed_methods' => ['*'], // Allow all methods like GET, POST, etc.
 
-    'allowed_origins' => ['https://dark-vault-frontend.vercel.app'],
+    'allowed_origins' => ['https://dark-vault-frontend.vercel.app', 'http://localhost:3000'],
 
     'allowed_origins_patterns' => [],
 
