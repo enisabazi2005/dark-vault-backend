@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\OtpMail;
 use App\Models\OtpVerification;
 use App\Mail\WelcomeMail;
+use Illuminate\Support\Str;
+use Google\Client as GoogleClient;
+
 
 class AuthController extends Controller {
     public function register(Request $request) {
@@ -103,6 +106,61 @@ class AuthController extends Controller {
         ]);
     }
 
+    public function googleAuth(Request $request)
+    {
+        try {
+            \Log::info('Received token:', ['token' => $request->token]);
+            
+            if (empty($request->token)) {
+                throw new \Exception('No token provided');
+            }
+
+            $client = new GoogleClient(['client_id' => config('services.google.client_id')]);
+            $payload = $client->verifyIdToken($request->token);
+
+            if (!$payload) {
+                throw new \Exception('Invalid token');
+            }
+
+            $user = DarkUsers::where('email', $payload['email'])->first();
+
+            if (!$user) {
+                $user = DarkUsers::create([
+                    'name' => $payload['given_name'] ?? '',
+                    'lastname' => $payload['family_name'] ?? '',
+                    'email' => $payload['email'],
+                    'password' => Hash::make(Str::random(16)),
+                    'gender' => 'male',
+                    'birthdate' => now()->subYears(18),
+                    'age' => 18,
+                    'picture' => $payload['picture'] ?? null,
+                    'request_id' => strtoupper(Str::random(8)),
+                ]);
+
+                Mail::to($user->email)->send(new WelcomeMail($user));
+            }
+
+            $token = $user->createToken('dark_vault_token')->plainTextToken;
+
+            return response()->json([
+                'user' => $user,
+                'token' => $token,
+                'is_verified' => true,
+                'profile_picture_url' => $user->picture ? asset('storage/' . $user->picture) : null,
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Google Auth Error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Google Auth failed', 
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
     public function verifyOtp(Request $request)
 {
     $request->validate([
